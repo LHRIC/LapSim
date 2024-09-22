@@ -1,0 +1,12 @@
+# High level
+vehicle: 'Vehicles/test_vehicle.yaml' #.yaml
+simulation_type: 'single_run' # single_run, sweep
+evaluation_mode: 'endurance' # endurance
+
+# Path settings
+paths:
+  endurance: 
+    file: '2019_endurance.svg' # .svg
+    length: 2000.0 # meters
+    steps: 1000 # integer
+    unique_radii: 25 # integer
