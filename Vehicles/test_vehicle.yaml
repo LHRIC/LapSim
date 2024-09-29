@@ -1,1 +1,9 @@
+# Ignore if not using precalculated performance envelope
+precalculated_envelope: # empty, or .yaml
+
+# Vehicle Parameters
 test: 'hello'
+
+# Swept Parameters
+sweep: 'yikes' #WIP
+  
