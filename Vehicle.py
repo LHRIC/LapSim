@@ -11,10 +11,11 @@ class Vehicle:
         print('initializing vehicle object')
         parameters_file = cfg['vehicle']
         print(f'reading "{cfg['vehicle']}"')
-        params: dict = parser.read_yaml(parameters_file)
+        vehicle_cfg: dict = parser.read_yaml(parameters_file)
         # TODO auto unit conversion into metric, replace swept parameters with the corresponding sweep_idx
-        self.params = params
-        if params['precalculated_envelope'] != None:
+        kgms_params = parser.convert(vehicle_cfg['params'])
+        self.params = kgms_params
+        if vehicle_cfg['precalculated_envelope'] != None:
             print('Precalculated performance envelopes are not currently supported')
             self._generate(cfg) #remove after adding precalcualted performance envelope support
         else:
@@ -33,11 +34,12 @@ class Vehicle:
         surface_x = np.zeros((dim,4))
         surface_y = np.zeros((dim,3))
         index = 0
+        print('initializing vehicle_state class')
+        vehicle_state = Vehicle_state(self.params)
         for v in velocity_set:
             for beta in body_slip_set:
                 for delta in steered_angle_set:
                     for eta in throttle_set:
-                        vehicle_state = Vehicle_state(self.params)
                         def _solve(x):
                             r = vehicle_state.eval(v,beta,delta,eta,x[0],x[1],x[2],residuals=True)
                             return r

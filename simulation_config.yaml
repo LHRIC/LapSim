@@ -4,9 +4,9 @@ simulation_type: 'single_run' # single_run, sweep
 evaluation_mode: 'endurance' # endurance
 
 # Performance envelope
-velocity_range: [0,100, 4] # m/s , N
-body_slip_range: [-15,15, 4] # deg , N
-steered_angle_range: [-55,55, 4] # deg , N
+velocity_range: [0,100, 2] # m/s , N
+body_slip_range: [-15,15, 2] # deg , N
+steered_angle_range: [-55,55, 2] # deg , N
 
 
 # Paths

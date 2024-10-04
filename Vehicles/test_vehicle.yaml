@@ -1,9 +1,18 @@
 # Ignore if not using precalculated performance envelope
 precalculated_envelope: # empty, or .yaml
 
-# Vehicle Parameters
-test: 'hello'
+# Vehicle Parameters (See README.md for supported units)
+params:
+  weight: 595lb # Total weight
+  cg_bias_f: 0.46 # % CG bias forwards (0,1)
+  cg_height: 12.0866in # CG Height
+  wheelbase: 1.535m # Wheelbase 
+  trackwidth_f: 48.875in  # Front Trackwidth
+  trackwidth_r: 48.875in # Rear Trackwidth
+  test: 500N/in
+  test2: 100lbf
+
 
 # Swept Parameters
-sweep: 'yikes' #WIP
+swept_params:  #WIP
   
