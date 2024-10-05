@@ -3,16 +3,51 @@ precalculated_envelope: # empty, or .yaml
 
 # Vehicle Parameters (See README.md for supported units)
 params:
+  # Note: put units in quotes "[unit]" to treat as dimensionless (ex: rpm)
+  ## High-Level
   weight: 595lb # Total weight
-  cg_bias_f: 0.46 # % CG bias forwards (0,1)
+  cg_bias_f: 0.46 # % CG bias forwards [0-1]
   cg_height: 12.0866in # CG Height
   wheelbase: 1.535m # Wheelbase 
-  trackwidth_f: 48.875in  # Front Trackwidth
-  trackwidth_r: 48.875in # Rear Trackwidth
-  test: 500N/in
-  test2: 100lbf
+  trackwidth_f: 48.875in  # Front trackwidth
+  trackwidth_r: 48.875in # Rear trackwidth
+
+  ## Suspension
+  rollc_f: 0.028m # Front roll center height (from ground)
+  rollc_r: 0.036m # Rear roll center height (from ground)
+  pitchc: 0.0m # Pitch center height (from ground)
+  anti_squat: 0 # % Anti squat [0-1]
+  anti_dive: 0 # % Anti dive [0-1]
+  # TODO anti lift?
+  lltd: 0.5 # Later Load Transfer Distribution % Front [0-1]
+  ride_rate_f: 31430N/m # Front ride rate
+  ride_rate_r: 38375N/m # Rear ride rate
+  # TODO wheel rates
+  tire_radius: 0.2032m # Tire radius
+  static_camber_f: -1deg
+  static_camver_r: -1deg
+  camber_gain_f: 0.01deg/mm
+  camber_gain_r: 0.02deg/mm
+  
+  ## Aero
+  cla: 2.8m^2 # Product of Coefficent of Lift x Reference Area
+  cda: 1.1m^2 # Product of Coefficent of Drag x Reference Area
+  cop: 0.46 # % Center of pressure bias forwards [0-1]
+
+  ## Tires
+  tire_file: '' # Tire filepath
+  friction_scaling_x: 0.6 # % Tire friction scaling in x-axis
+  friction_scaling_y: 0.6 # % Tire friction scaling in y-axis
 
 
+  ## Powertrain
+  torque_curve_file: '' # Torque curve filepath
+  primary_reduction: 76/36 #Idk tbh
+  gear_ratios: {1: 33/12, 2: 32/16, 3: 30/18, 4: 26/18, 5: 30/23, 6: 29/24} # Gear ratios at corresponding gears
+  final_drive: 37/11 
+  shiftpoint: 12500rpm # RPM to shift at
+  drivetrail_losses: 0.85 # % Drivetrain 'efficency'(?) #TODO make this 1-% ?
+  
 # Swept Parameters
 swept_params:  #WIP
   
