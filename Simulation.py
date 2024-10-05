@@ -8,9 +8,11 @@ class Simulation:
         self.cfg = read_yaml(config_file)
         self.run_types: dict = {'single_run': self.single_run}
         self.evaluation_modes: dict = {'endurance': self.endurance}
+        self.run_types[self.cfg['simulation_type']]()
         try:
             self.run_types[self.cfg['simulation_type']]()
-        except KeyError:
+        except KeyError as e:
+            print(e)
             print(f'"{self.cfg['simulation_type']}" is not a valid run type, check simulation_config.yaml')
 
 ## Run Types
@@ -20,8 +22,9 @@ class Simulation:
         vehicle = Vehicle(self.cfg,sweep_idx=None)
         try:
             self.evaluation_modes[self.cfg['evaluation_mode']](vehicle)
-        except KeyError:
+        except KeyError as e:
             print(f'"{self.cfg['evaluation_mode']}" is not a valid evaluation mode, check simulation_config.yaml')
+            print(e)
     
     def sweep():
         return 

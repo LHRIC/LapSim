@@ -7,6 +7,7 @@ class Vehicle_state:
     def __init__(self,params:dict) -> None:
         # Pull parameter dictionary
         self.params = params
+        print(self.params)
         # Initialize models
         self.dyn = Dynamic_module(self)
         self.ptn = Powertrain_module(self)
@@ -31,6 +32,7 @@ class Vehicle_state:
         self.y_ddt=y_ddt
         self.psi_ddt=psi_ddt
         # Calculate tire normal forces
+        # Each function updates self.[fl,fr,rl,rr].fz
         self.dyn.static_weight(self)
         self.dyn.weight_transfer(self)
         self.aero.downforce(self)
