@@ -26,7 +26,7 @@ params:
   # TODO wheel rates
   tire_radius: 0.2032m # Tire radius
   static_camber_f: -1deg
-  static_camver_r: -1deg
+  static_camber_r: -1deg
   camber_gain_f: 0.01deg/mm
   camber_gain_r: 0.02deg/mm
   
