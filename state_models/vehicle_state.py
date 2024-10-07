@@ -3,6 +3,7 @@ from state_models.powertrain_module import Powertrain_module
 from state_models.aero_module import Aero_module
 from state_models.tire_state import Tire_state
 from scipy.constants import g
+import numpy as np
 
 class Vehicle_state:
     def __init__(self,params:dict) -> None:
@@ -16,37 +17,51 @@ class Vehicle_state:
         # Sprung mass state
         self.roll = 0
         self.pitch = 0
+
     def _residuals(self):
-        sum_fz = self.fl.fz + self.fr.fz + self.rl.fz + self.rr.fz - g*self.params['mass']
-        return [0,0,sum_fz]
-    
+        mz = np.linalg.matmul(self.params['inertia_tensor'],[0,0,self.psi_ddt])
+        self.moments.append(mz)
+        print (f'Forces: {self.forces}')
+        print (f'Moments: {self.moments}')
+        sum_forces = np.add.reduce(self.forces)
+        sum_moments = np.add.reduce(self.moments)
+        print (f'sum_Forces: {sum_forces}')
+        print (f'sum_Moments: {sum_moments}')
+        residuals = [*sum_forces, *sum_moments]
+        return residuals
+
     def eval(self,v,beta,delta,eta,x_ddt,y_ddt,psi_ddt,residuals):
         # Initialize Tires
-        self.fl = Tire_state()
-        self.fr = Tire_state()
-        self.rl = Tire_state()
-        self.rr = Tire_state()
-        # 
-        self.v=v
-        self.beta=beta
-        self.delta=delta
-        self.eta=eta
-        self.x_ddt=x_ddt
-        self.y_ddt=y_ddt
-        self.psi_ddt=psi_ddt
-        print(f'x_ddt: {self.x_ddt} y_ddt: {self.y_ddt}')
-        # Calculate tire normal forces
-        # Each function updates self.[fl,fr,rl,rr].fz
-        self.dyn.static_weight(self)
-        self.dyn.weight_transfer(self)
-        self.aero.downforce(self)
-        # Calculate suspension travel
-        self.dyn.kinematic_eval(self)
-        # STEERING MODULE + 
-        
-        # Calculate longitudinal force cutoff from powertain/braking effects
-        self.ptn.torque(self)
+        self.fl = Tire_state(self)
+        self.fr = Tire_state(self)
+        self.rl = Tire_state(self)
+        self.rr = Tire_state(self)
+        self.forces=[]
+        self.moments=[]
+        self.v=v # Tangential velocity
+        self.beta=beta # Body slip
+        self.delta=delta # Steered angle
+        self.eta=eta # 'Throttle' 
+        self.x_ddt=x_ddt # Ax
+        self.y_ddt=y_ddt # Ay
+        self.psi_ddt=psi_ddt # Yaw accel
+        # Each function updates: self.xx.fz | self.forces | self.moments
+        self.dyn.static_weight(self) # Gravity effects
+        self.dyn.weight_transfer(self) # Acceleration effects
+        self.aero.downforce(self) # Downforce
+        self.dyn.kinematic_eval(self) # Suspension travel and inclination angle
+        self.ptn.torque(self) #TODO Powertrain
+        self.dyn.steering(self) # Evaluate steering angles
+        self.fl.mf52(self) # Evaluate tire forces
+        self.fr.mf52(self)
+        self.rl.mf52(self)
+        self.rr.mf52(self)
+        self.dyn.tire_forces(self)
+
+
         if residuals == True:
-            return self._residuals()
+            r = self._residuals()
+            print(f'r {r}')
+            return r
         
 

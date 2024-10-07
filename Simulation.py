@@ -19,9 +19,9 @@ class Simulation:
 
     def single_run(self):
         print('creating vehicle object instance')
-        vehicle = Vehicle(self.cfg,sweep_idx=None)
+        self.vehicle = Vehicle(self.cfg,sweep_idx=None)
         try:
-            self.evaluation_modes[self.cfg['evaluation_mode']](vehicle)
+            self.evaluation_modes[self.cfg['evaluation_mode']](self.vehicle)
         except KeyError as e:
             print(f'"{self.cfg['evaluation_mode']}" is not a valid evaluation mode, check simulation_config.yaml')
             print(e)

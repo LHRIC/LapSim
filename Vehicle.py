@@ -4,6 +4,7 @@ import pandas as pd
 from state_models.vehicle_state import Vehicle_state
 from matplotlib import pyplot as plt
 from scipy.optimize._root import root
+from scipy.optimize import least_squares
 import scipy.optimize
 class Vehicle:
 
@@ -15,19 +16,20 @@ class Vehicle:
         # TODO auto unit conversion into metric, replace swept parameters with the corresponding sweep_idx
         kgms_params = parser.convert(vehicle_cfg['params'])
         self.params = kgms_params
-        # if vehicle_cfg['precalculated_envelope'] != None:
-        #     print('Precalculated performance envelopes are not currently supported')
-        #     self._generate(cfg) #remove after adding precalcualted performance envelope support
-        # else:
-        #     self._generate(cfg)
-        self._funplots()
-    def _funplots(self):
+        if vehicle_cfg['precalculated_envelope'] != None:
+            print('Precalculated performance envelopes are not currently supported')
+            self._generate(cfg) #remove after adding precalcualted performance envelope support
+        else:
+            self._generate(cfg)
+        # self._debug()
+
+    def _debug(self): # Temporary module to debug vehicle_state
         fl_list=[]
         fr_list=[]
         rl_list=[]
         rr_list=[]
         v,beta,delta,eta=0,0,0,0
-        rng = np.linspace(0,5,100)
+        rng = np.linspace(0,9.81,100)
         for ay in rng:
             x=[0,ay,0]
             vehicle_state = Vehicle_state(self.params)
@@ -36,9 +38,9 @@ class Vehicle:
             fr_list.append(vehicle_state.fr.fz)
             rl_list.append(vehicle_state.rl.fz)
             rr_list.append(vehicle_state.rr.fz)
-        plt.scatter(rng,fl_list)
-        plt.scatter(rng,fr_list)
-        plt.show()
+        # plt.scatter(rng,fl_list)
+        # plt.scatter(rng,fr_list)
+        # plt.show()
 
     def _generate(self,cfg:dict):
         print('generating response surface')
@@ -66,15 +68,21 @@ class Vehicle:
                             print(f'{self.count} RESIDUALS:: {r}')
                             self.count += 1
                             return r
-                        soln = root(_solve,x0,method='hybr')
+                        # soln = root(_solve,x0,method='hybr')
+                        soln = least_squares(_solve,x0)
                         print(soln)
                         surface_x[index]=[v,beta,delta,eta]
                         surface_y[index]=soln.x
                         x0 = soln.x
                         index+=1
+        ax_list = []
+        ay_list = []
         for i, row in enumerate(surface_x):
-            print(f'{surface_x[i]}  ||||   {surface_y[i]}')                
-                        
+            ax_list.append(surface_y[i][0])
+            ay_list.append(surface_y[i][1])
+            print(f'{surface_x[i]}  ||||   {surface_y[i]}')       
+        plt.scatter(ax_list,ay_list)         
+        plt.show()
 
   
   
