@@ -4,7 +4,6 @@ import pandas as pd
 from state_models.vehicle_state import Vehicle_state
 from matplotlib import pyplot as plt
 from scipy.optimize._root import root
-from scipy.optimize import least_squares
 import scipy.optimize
 class Vehicle:
 
@@ -68,21 +67,13 @@ class Vehicle:
                             print(f'{self.count} RESIDUALS:: {r}')
                             self.count += 1
                             return r
-                        # soln = root(_solve,x0,method='hybr')
-                        soln = least_squares(_solve,x0)
-                        print(soln)
+                        soln = root(_solve,x0,method='hybr') # FIXME model does not converge ATM -> Need to figure out tires
+                        
+                        # The following two arrays compose the response surface the model will be pulling from
                         surface_x[index]=[v,beta,delta,eta]
                         surface_y[index]=soln.x
                         x0 = soln.x
                         index+=1
-        ax_list = []
-        ay_list = []
-        for i, row in enumerate(surface_x):
-            ax_list.append(surface_y[i][0])
-            ay_list.append(surface_y[i][1])
-            print(f'{surface_x[i]}  ||||   {surface_y[i]}')       
-        plt.scatter(ax_list,ay_list)         
-        plt.show()
 
   
   

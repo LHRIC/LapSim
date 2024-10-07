@@ -10,10 +10,11 @@ class Tire_state:
         self.alpha = 0.0
         self.gamma = 0.0
     def mf52(self,model: 'vehicle_state.Vehicle_state'):
+        #FIXME MAJOR MAJOR WIP
         mf52 = MF52()
         self.fy = mf52.Fy (Fz=self.fz,Alpha=self.alpha, Gamma=self.gamma) #TODO SCALING!!
         fx_range=[]
         for kappa in np.linspace(0,0.2,100):
             fx_range.append(mf52.Fx(Fz=self.fz, Kappa=kappa, Gamma=self.gamma))
         self.fx = max(fx_range) #TODO SCALING!!
-        self.f_vec = [self.fx,self.fy,self.fz]
+        self.f_vec = [self.fx,self.fy,self.fz] 

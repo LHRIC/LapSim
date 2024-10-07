@@ -51,7 +51,7 @@ class Dynamic_module:
         dFz_elas_roll_r = (1-k_phi_ratio)*(self.mass_f*self.roll_lever_f+self.mass_r*self.roll_lever_r)*model.y_ddt/self.trackwidth_r
         dFz_roll_f = dFz_geom_roll_f + dFz_elas_roll_f
         dFz_roll_r = dFz_geom_roll_r + dFz_elas_roll_r
-        dFz_roll_f2 = model.y_ddt*self.mass_f*self.cg_height/self.trackwidth_f
+
         # Weight transfer from pitch
         dFz_tot_pitch = self.cg_height*self.mass_f*model.x_ddt/self.wheelbase
         if dFz_tot_pitch >= 0:
@@ -60,10 +60,10 @@ class Dynamic_module:
         else:
             dFz_elas_pitch_f = -dFz_tot_pitch
             dFz_elas_pitch_r = dFz_tot_pitch*(1-self.anti_squat)
-        dFz_geom_pitch_f = -dFz_tot_pitch + dFz_elas_pitch_f
+        dFz_geom_pitch_f = -dFz_tot_pitch + dFz_elas_pitch_f # Don't need these technically
         dFz_geom_pitch_r = dFz_tot_pitch + dFz_elas_pitch_r
 
-        # TODO can we make this cleaner
+        # TODO can we make this cleaner and reduce the possibility of making a sign error
         dFz_elas_fl = -dFz_elas_roll_f + dFz_elas_pitch_f/2
         dFz_elas_fr = dFz_elas_roll_f + dFz_elas_pitch_f/2
         dFz_elas_rl = -dFz_elas_roll_r + dFz_elas_pitch_r/2
@@ -84,11 +84,43 @@ class Dynamic_module:
         model.rl.fz_elas += dFz_elas_rl
         model.rr.fz_elas += dFz_elas_rr
 
-        model.forces.append([model.x_ddt*self.mass,model.y_ddt*self.mass,0]) 
+        model.forces.append([model.x_ddt*self.mass,model.y_ddt*self.mass,0]) # Body forces
 
     def kinematic_eval(self,model: 'vehicle_state.Vehicle_state'):
-        # TODO Suspension travel and inclination angle
-        pass
+        ride_rate_f = model.params['ride_rate_f']
+        ride_rate_r = model.params['ride_rate_r']
+        wheel_rate_f = model.params['wheel_rate_f']
+        wheel_rate_r = model.params['wheel_rate_r']
+        static_camber_f = model.params['static_camber_f']
+        static_camber_r = model.params['static_camber_r']
+        camber_gain_f = model.params['camber_gain_f']
+        camber_gain_r = model.params['camber_gain_r']
+        tire_stiff_f = wheel_rate_f*ride_rate_f/(wheel_rate_f-ride_rate_f)
+        tire_stiff_r = wheel_rate_r*ride_rate_r/(wheel_rate_r-ride_rate_r)
+
+        dz_sus_fl = model.fl.fz_elas / wheel_rate_f
+        dz_sus_fr = model.fr.fz_elas / wheel_rate_f
+        dz_sus_rl = model.rl.fz_elas / wheel_rate_r
+        dz_sus_rr = model.rr.fz_elas / wheel_rate_r
+
+        dz_tire_fl = model.fl.fz / tire_stiff_f
+        dz_tire_fr = model.fr.fz / tire_stiff_f
+        dz_tire_rl = model.rl.fz / tire_stiff_r
+        dz_tire_rr = model.rr.fz / tire_stiff_r
+
+        dz_fl = dz_sus_fl + dz_tire_fl
+        dz_fr = dz_sus_fr + dz_tire_fr
+        dz_rl = dz_sus_rl + dz_tire_rl
+        dz_rr = dz_sus_rr + dz_tire_rr
+
+        # Assumine front roll = rear roll & left pitch = right pitch
+        model.roll = np.arcsin(((dz_fr-dz_fl)/self.trackwidth_f))
+        model.pitch = np.arcsin((dz_fl-dz_rl)/self.wheelbase)
+
+        model.fl.gamma = static_camber_f + dz_sus_fl*camber_gain_f - model.roll
+        model.fr.gamma = static_camber_f + dz_sus_fr*camber_gain_f + model.roll
+        model.rl.gamma = static_camber_r + dz_sus_rl*camber_gain_r - model.roll
+        model.rr.gamma = static_camber_r + dz_sus_rr*camber_gain_r + model.roll
     
     def steering(self,model:'vehicle_state.Vehicle_state'):
         # TODO Ackermann
@@ -116,6 +148,8 @@ class Dynamic_module:
         print(f'RR_alpha {model.rr.alpha}')
 
         # Steer rotation matricies
+        # TODO this will break once I add ackerman
+        # TODO this ignores static toe
         x=model.delta
         self.fl_steer_mat = np.array([[np.cos(x),-np.sin(x),0],[np.sin(x),np.cos(x),0],[0,0,1]])
         self.fr_steer_mat = np.array([[np.cos(x),-np.sin(x),0],[np.sin(x),np.cos(x),0],[0,0,1]])
@@ -124,7 +158,7 @@ class Dynamic_module:
         
         fl_adjusted_f = np.matmul(self.fl_steer_mat,model.fl.f_vec)
         fr_adjusted_f = np.matmul(self.fr_steer_mat,model.fr.f_vec)
-        #TODO Im technically ignoring static toe here
+        
         model.forces.append(fl_adjusted_f)
         model.forces.append(fr_adjusted_f)
         model.forces.append(model.rl.f_vec)

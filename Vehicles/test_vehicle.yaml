@@ -22,14 +22,15 @@ params:
   anti_lift: 0 # % Anti lift [0-1]
   # TODO anti lift?
   lltd: 0.5 # Later Load Transfer Distribution % Front [0-1]
-  ride_rate_f: 31430N/m # Front ride rate
-  ride_rate_r: 31430N/m # Rear ride rate
-  # TODO wheel rates
+  ride_rate_f: 30000N/m # Front ride rate (Single wheel)
+  ride_rate_r: 30000N/m # Rear ride rate (Single wheel)
+  wheel_rate_f: 40000N/m # Front wheel rate (Single wheel)
+  wheel_rate_r: 40000N/m # Rear wheel rate (Single wheel)
   tire_radius: 0.2032m # Tire radius
   static_camber_f: -1deg
   static_camber_r: -1deg
-  camber_gain_f: 0.01deg/mm
-  camber_gain_r: 0.02deg/mm
+  camber_gain_f: -0.01deg/mm
+  camber_gain_r: -0.02deg/mm
   static_toe_f: 0deg
   static_toe_r: 0deg
   

@@ -8,6 +8,7 @@ class Aero_module:
         self.wheelbase = model.params['wheelbase']
         self.cg_bias_f = model.params['cg_bias_f']
         self.rho = 1.293 # density of air in kg/m^3
+        
     def downforce(self,model: 'vehicle_state.Vehicle_state'):
         fz_aero_f = self.rho/2*self.cop*self.cla*model.v**2
         fz_aero_r = self.rho/2*(1-self.cop)*self.cla*model.v**2

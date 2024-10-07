@@ -45,7 +45,7 @@ class Vehicle_state:
         self.x_ddt=x_ddt # Ax
         self.y_ddt=y_ddt # Ay
         self.psi_ddt=psi_ddt # Yaw accel
-        # Each function updates: self.xx.fz | self.forces | self.moments
+        # Each function updates: self.[fl,fr,rl,rr] | self.forces | self.moments
         self.dyn.static_weight(self) # Gravity effects
         self.dyn.weight_transfer(self) # Acceleration effects
         self.aero.downforce(self) # Downforce
@@ -56,11 +56,10 @@ class Vehicle_state:
         self.fr.mf52(self)
         self.rl.mf52(self)
         self.rr.mf52(self)
-        self.dyn.tire_forces(self)
-
+        self.dyn.tire_forces(self) # Apply tire forces to car
 
         if residuals == True:
-            r = self._residuals()
+            r = self._residuals() 
             print(f'r {r}')
             return r
         
