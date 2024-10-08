@@ -1,19 +1,19 @@
-from state_models.dynamic_module import Dynamic_module
-from state_models.powertrain_module import Powertrain_module
-from state_models.aero_module import Aero_module
-from state_models.tire_state import Tire_state
+from state_models.dynamic_module import DynModel
+from state_models.powertrain_module import PtnModel
+from state_models.aero_module import AeroModel
+from state_models.tire_state import TireState
 from scipy.constants import g
 import numpy as np
 
-class Vehicle_state:
+class VehicleState:
     def __init__(self,params:dict) -> None:
         # Pull parameter dictionary
         self.params = params
         print(self.params)
         # Initialize models
-        self.dyn = Dynamic_module(self)
-        self.ptn = Powertrain_module(self)
-        self.aero = Aero_module(self)
+        self.dyn = DynModel(self)
+        self.ptn = PtnModel(self)
+        self.aero = AeroModel(self)
         # Sprung mass state
         self.roll = 0
         self.pitch = 0
@@ -32,10 +32,10 @@ class Vehicle_state:
 
     def eval(self,v,beta,delta,eta,x_ddt,y_ddt,psi_ddt,residuals):
         # Initialize Tires
-        self.fl = Tire_state(self)
-        self.fr = Tire_state(self)
-        self.rl = Tire_state(self)
-        self.rr = Tire_state(self)
+        self.fl = TireState(self)
+        self.fr = TireState(self)
+        self.rl = TireState(self)
+        self.rr = TireState(self)
         self.forces=[]
         self.moments=[]
         self.v=v # Tangential velocity

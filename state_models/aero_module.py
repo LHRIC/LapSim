@@ -1,7 +1,7 @@
 from state_models import vehicle_state
 import numpy as np
-class Aero_module:
-    def __init__(self,model: 'vehicle_state.Vehicle_state') -> None:
+class AeroModel:
+    def __init__(self,model: 'vehicle_state.VehicleState') -> None:
         self.cla = model.params['cla']
         self.cda = model.params['cda']
         self.cop = model.params['cop']
@@ -9,7 +9,7 @@ class Aero_module:
         self.cg_bias_f = model.params['cg_bias_f']
         self.rho = 1.293 # density of air in kg/m^3
         
-    def downforce(self,model: 'vehicle_state.Vehicle_state'):
+    def downforce(self,model: 'vehicle_state.VehicleState'):
         fz_aero_f = self.rho/2*self.cop*self.cla*model.v**2
         fz_aero_r = self.rho/2*(1-self.cop)*self.cla*model.v**2
         
@@ -29,5 +29,5 @@ class Aero_module:
         model.forces.append(downforce_vec) 
         model.moments.append(downforce_moment) 
 
-    def drag(self,model: 'vehicle_state.Vehicle_state'):
+    def drag(self,model: 'vehicle_state.VehicleState'):
         pass

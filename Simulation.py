@@ -1,6 +1,6 @@
 from utility.parser import read_yaml
-from Vehicle import Vehicle
-from Path import Path
+from vehicle import Vehicle
+from path import Path
 
 class Simulation:
 

@@ -1,8 +1,8 @@
 from state_models import vehicle_state
 import numpy as np
 from scipy.constants import g
-class Dynamic_module:
-    def __init__(self,model: 'vehicle_state.Vehicle_state') -> None:
+class DynModel:
+    def __init__(self,model: 'vehicle_state.VehicleState') -> None:
         self.mass = model.params['mass']
         self.cg_bias_f = model.params['cg_bias_f']
         self.cg_height = model.params['cg_height']
@@ -27,7 +27,7 @@ class Dynamic_module:
         print(f'rl_pos {self.rl_pos}')
         print(f'rr_pos {self.rr_pos}')
 
-    def static_weight(self,model: 'vehicle_state.Vehicle_state'):
+    def static_weight(self,model: 'vehicle_state.VehicleState'):
         self.mass_f = self.mass*self.cg_bias_f
         self.mass_r = self.mass*(1-self.cg_bias_f)
         # Update Tires
@@ -41,7 +41,7 @@ class Dynamic_module:
         model.rr.fz_elas += self.mass_r*g/2
         model.forces.append([0,0,-self.mass*g])
 
-    def weight_transfer(self,model: 'vehicle_state.Vehicle_state'):
+    def weight_transfer(self,model: 'vehicle_state.VehicleState'):
         k_phi_f = self.ride_rate_f*self.trackwidth_f**2*np.tan(1)/4 # F roll stiff
         k_phi_r = self.ride_rate_r*self.trackwidth_r**2*np.tan(1)/4 # R roll stiff
         k_phi_ratio = k_phi_f/(k_phi_f+k_phi_r)
@@ -86,7 +86,7 @@ class Dynamic_module:
 
         model.forces.append([model.x_ddt*self.mass,model.y_ddt*self.mass,0]) # Body forces
 
-    def kinematic_eval(self,model: 'vehicle_state.Vehicle_state'):
+    def kinematic_eval(self,model: 'vehicle_state.VehicleState'):
         ride_rate_f = model.params['ride_rate_f']
         ride_rate_r = model.params['ride_rate_r']
         wheel_rate_f = model.params['wheel_rate_f']
@@ -122,7 +122,7 @@ class Dynamic_module:
         model.rl.gamma = static_camber_r + dz_sus_rl*camber_gain_r - model.roll
         model.rr.gamma = static_camber_r + dz_sus_rr*camber_gain_r + model.roll
     
-    def steering(self,model:'vehicle_state.Vehicle_state'):
+    def steering(self,model:'vehicle_state.VehicleState'):
         # TODO Ackermann
         static_toe_f = model.params['static_toe_f']
         static_toe_r = model.params['static_toe_r']
@@ -154,7 +154,7 @@ class Dynamic_module:
         self.fl_steer_mat = np.array([[np.cos(x),-np.sin(x),0],[np.sin(x),np.cos(x),0],[0,0,1]])
         self.fr_steer_mat = np.array([[np.cos(x),-np.sin(x),0],[np.sin(x),np.cos(x),0],[0,0,1]])
 
-    def tire_forces(self,model:'vehicle_state.Vehicle_state'):
+    def tire_forces(self,model:'vehicle_state.VehicleState'):
         
         fl_adjusted_f = np.matmul(self.fl_steer_mat,model.fl.f_vec)
         fr_adjusted_f = np.matmul(self.fr_steer_mat,model.fr.f_vec)

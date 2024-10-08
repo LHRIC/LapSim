@@ -1,7 +1,7 @@
 from utility import parser
 import numpy as np
 import pandas as pd
-from state_models.vehicle_state import Vehicle_state
+from state_models.vehicle_state import VehicleState
 from matplotlib import pyplot as plt
 from scipy.optimize._root import root
 import scipy.optimize
@@ -31,7 +31,7 @@ class Vehicle:
         rng = np.linspace(0,9.81,100)
         for ay in rng:
             x=[0,ay,0]
-            vehicle_state = Vehicle_state(self.params)
+            vehicle_state = VehicleState(self.params)
             vehicle_state.eval(v,beta,delta,eta,x[0],x[1],x[2],residuals=False)
             fl_list.append(vehicle_state.fl.fz)
             fr_list.append(vehicle_state.fr.fz)
@@ -55,7 +55,7 @@ class Vehicle:
         surface_y = np.zeros((dim,3))
         index = 0
         print('initializing vehicle_state class')
-        vehicle_state = Vehicle_state(self.params)
+        vehicle_state = VehicleState(self.params)
         self.count=0
         for v in velocity_set:
             for beta in body_slip_set:
