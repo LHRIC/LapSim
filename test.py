@@ -19,8 +19,8 @@ for Fz in np.linspace(100,1000,5):
     # plt.title('Fy vs SA')
     # plt.show()
 
-    plt.plot(kappa_set,Fx_list)
+    plt.plot(SA_set,Fy_list)
     Fx_list=[]
     Fy_list=[]
-plt.title('Fx vs SR')
+plt.title('Fy vs SA')
 plt.show()

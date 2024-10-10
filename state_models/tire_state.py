@@ -16,14 +16,20 @@ class TireState:
 
     def _comstock(self,model: 'vehicle_state.VehicleState'):
         
-        fx_comstock = (self.fx0*self.fy0)/np.sqrt()
-        fy_comstock = 1
+        s = self.kappa
+        a = self.alpha
+        fx0 = self.fx0
+        fy0 = self.fy0
+        Cs = fx0/s
+        Ca = fy0/a
+        
+        fxy = fx0*fy0/np.sqrt(s**2*fy0**2+fx0**2*(np.tan(a)**2))
+        fx_1 =  np.sqrt(s**2*Ca**2+(1-s)**2*(np.cos(a))**2*a*fx0**2)/Ca
+        fy_1 =  np.sqrt((1-s)**2*(np.cos(a))**2*a*fy0**2+(np.sin(a))**2*Cs**2)/(Cs*np.cos(a))
 
-        fx_correction = 1
-        fy_correction = 1
-
-        self.fx = 0
-        self.fy = 0
+        self.fx = fxy*fx_1
+        self.fy = fxy*fy_1
+        
         pass
     def mf52(self,model: 'vehicle_state.VehicleState'):
         #FIXME MAJOR MAJOR WIP
