@@ -46,7 +46,7 @@ params:
 
 
   ## Powertrain
-  torque_curve_file: '' # Torque curve filepath
+  torque_curve_file: 'vehicles/23_torque_curve.csv' # Torque curve filepath .csv
   primary_reduction: 76/36 #Idk tbh
   gear_ratios: {1: 33/12, 2: 32/16, 3: 30/18, 4: 26/18, 5: 30/23, 6: 29/24} # Gear ratios at corresponding gears
   final_drive: 37/11 

@@ -50,7 +50,7 @@ class VehicleState:
         self.dyn.weight_transfer(self) # Acceleration effects
         self.aero.downforce(self) # Downforce
         self.dyn.kinematic_eval(self) # Suspension travel and inclination angle
-        self.ptn.torque(self) #TODO Powertrain
+        self.ptn.torque(self) #Powertrain and braking, updates max Fx for tires
         self.dyn.steering(self) # Evaluate steering angles
         self.fl.mf52(self) # Evaluate tire forces
         self.fr.mf52(self)
