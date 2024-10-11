@@ -52,10 +52,10 @@ class VehicleState:
         self.dyn.kinematic_eval(self) # Suspension travel and inclination angle
         self.ptn.torque(self) #Powertrain and braking, updates max Fx for tires
         self.dyn.steering(self) # Evaluate steering angles
-        self.fl.mf52(self) # Evaluate tire forces
-        self.fr.mf52(self)
-        self.rl.mf52(self)
-        self.rr.mf52(self)
+        self.fl.mf52() # Evaluate tire forces
+        self.fr.mf52()
+        self.rl.mf52()
+        self.rr.mf52()
         self.dyn.tire_forces(self) # Apply tire forces to car
 
         if residuals == True:
