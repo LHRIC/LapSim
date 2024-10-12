@@ -15,7 +15,10 @@ class PtnModel:
         if model.eta > 0:
             self._accelerate(model)
         elif model.eta == 0:
-            model.fl.fx_max = 0
+            model.fl.free_rolling = True
+            model.fr.free_rolling = True
+            model.rl.free_rolling = True
+            model.rr.free_rolling = True
         else:
             self._brake()
 

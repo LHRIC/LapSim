@@ -35,10 +35,10 @@ class DynModel:
         model.fr.fz += self.mass_f*g/2
         model.rl.fz += self.mass_r*g/2
         model.rr.fz += self.mass_r*g/2
-        model.fl.fz_elas += self.mass_f*g/2
-        model.fr.fz_elas += self.mass_f*g/2
-        model.rl.fz_elas += self.mass_r*g/2
-        model.rr.fz_elas += self.mass_r*g/2
+        # model.fl.fz_elas += self.mass_f*g/2
+        # model.fr.fz_elas += self.mass_f*g/2
+        # model.rl.fz_elas += self.mass_r*g/2
+        # model.rr.fz_elas += self.mass_r*g/2
         model.forces.append([0,0,-self.mass*g])
 
     def weight_transfer(self,model: 'vehicle_state.VehicleState'):
@@ -91,6 +91,8 @@ class DynModel:
         ride_rate_r = model.params['ride_rate_r']
         wheel_rate_f = model.params['wheel_rate_f']
         wheel_rate_r = model.params['wheel_rate_r']
+        max_travel_f = model.params['max_travel_f']
+        max_travel_r = model.params['max_travel_r']
         static_camber_f = model.params['static_camber_f']
         static_camber_r = model.params['static_camber_r']
         camber_gain_f = model.params['camber_gain_f']
@@ -98,11 +100,18 @@ class DynModel:
         tire_stiff_f = wheel_rate_f*ride_rate_f/(wheel_rate_f-ride_rate_f)
         tire_stiff_r = wheel_rate_r*ride_rate_r/(wheel_rate_r-ride_rate_r)
 
+        # Curb negative fz values
+        for tire in [model.fl, model.fr, model.rl, model.rr]:
+            if tire.fz < 0:
+                tire.fz = 0
+
         dz_sus_fl = model.fl.fz_elas / wheel_rate_f
         dz_sus_fr = model.fr.fz_elas / wheel_rate_f
         dz_sus_rl = model.rl.fz_elas / wheel_rate_r
         dz_sus_rr = model.rr.fz_elas / wheel_rate_r
 
+
+        # Ignoring tire deflections for now TODO springs in series
         dz_tire_fl = model.fl.fz / tire_stiff_f
         dz_tire_fr = model.fr.fz / tire_stiff_f
         dz_tire_rl = model.rl.fz / tire_stiff_r
@@ -113,6 +122,15 @@ class DynModel:
         dz_rl = dz_sus_rl + dz_tire_rl
         dz_rr = dz_sus_rr + dz_tire_rr
 
+        # Clip negative fz values TODO: 
+        for tire in [model.fl, model.fr, model.rl, model.rr]:
+            if tire.fz < 0:
+                tire.fz = 0
+
+        # Clamp suspension travel to maximums TODO: currently assuming symmetric travel limits
+        [dz_fl, dz_fr] = np.clip([dz_fl, dz_fr],-max_travel_f,max_travel_f)
+        [dz_rl, dz_rr] = np.clip([dz_rl, dz_rr],-max_travel_r,max_travel_r)
+        
         # Assumine front roll = rear roll & left pitch = right pitch
         model.roll = np.arcsin(((dz_fr-dz_fl)/self.trackwidth_f))
         model.pitch = np.arcsin((dz_fl-dz_rl)/self.wheelbase)
@@ -126,7 +144,7 @@ class DynModel:
         # TODO Ackermann
         static_toe_f = model.params['static_toe_f']
         static_toe_r = model.params['static_toe_r']
-        psi_dt = model.y_ddt/model.v # TODO MAKE THIS SWEPT?
+        psi_dt = model.psi_dt
 
         # Inertial frame car velocity vector
         v_vec = [model.v*np.cos(model.beta),model.v*np.sin(model.beta),0]

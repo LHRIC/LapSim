@@ -45,7 +45,8 @@ class Vehicle:
         velocity_set=_param_set(cfg['velocity_range'])
         body_slip_set=_param_set(cfg['body_slip_range'])
         steered_angle_set=_param_set(cfg['steered_angle_range'])
-        throttle_set = np.linspace(1,1,1)
+        yaw_rate_set=_param_set(cfg['yaw_rate_range'])
+        throttle_set = np.linspace(0,0,1)
         x0 = [0,0,0]
         dim = np.prod(list(map(len,[velocity_set,body_slip_set,steered_angle_set,throttle_set])))
         surface_x = np.zeros((dim,4))
@@ -55,26 +56,29 @@ class Vehicle:
         vehicle_state = VehicleState(self.params)
         self.count=0
         for v in velocity_set:
-            for beta in body_slip_set:
-                for delta in steered_angle_set:
-                    for eta in throttle_set:
-                        def _solve(x):
-                            # print(f'{self.count} x:: {x}')
-                            r = vehicle_state.eval(v,beta,delta,eta,x[0],x[1],x[2],residuals=True)
-                            # print(f'{self.count} RESIDUALS:: {r}')
-                            self.count += 1
-                            return r
-                        soln = root(_solve,x0,method='hybr')
-                        # print(soln)
-                        
-                        # The following two arrays compose the response surface the model will be pulling from
-                        surface_x[index]=[v,beta,delta,eta]
-                        surface_y[index]=soln.x
-                        x0 = soln.x
-                        index+=1
-                        print(f'{index}/{dim}')
+            for psi_dt in yaw_rate_set:
+                for beta in body_slip_set:
+                    for delta in steered_angle_set:
+                        for eta in throttle_set:
+                            def _solve(x):
+                                # print(f'{self.count} x:: {x}')
+                                r = vehicle_state.eval(v,psi_dt,beta,delta,eta,x[0],x[1],x[2],residuals=True)
+                                # print(f'{self.count} RESIDUALS:: {r}')
+                                self.count += 1
+                                return r
+                            soln = root(_solve,x0,method='hybr')
+                            # print(soln)
+                            
+                            # The following two arrays compose the response surface the model will be pulling from
+                            surface_x[index]=[v,beta,delta,eta]
+                            surface_y[index]=soln.x
+                            # x0 = soln.x
+                            index+=1
+                            print(f'{index}/{dim}')
 
         # Plotting
+
+        ### MMD Generation
 
         ax_list = [idx[0]/9.81 for idx in surface_y]
         ay_list = [idx[1]/9.81 for idx in surface_y]
@@ -83,14 +87,22 @@ class Vehicle:
         steer_list = [idx[2] for idx in surface_x]
         bodyslip_list = [idx[1] for idx in surface_x]
 
-        
+        ay_mat = np.reshape(ay_list,(30,30))
+        psi_ddt_mat = np.reshape(psi_ddt_list, (30,30))
+        steer_mat = np.reshape(steer_list,(30,30))
+        bodyslip_mat = np.reshape(bodyslip_list,(30,30))
+
+        # fig3 = plt.figure()
+        # ax3 = fig3.add_subplot()
+        # plt.contour(ay_mat,psi_ddt_mat,steer_mat)
+        # plt.contour(ay_mat,psi_ddt_mat,bodyslip_mat)
+
         fig0 = plt.figure()
         ax0 = fig0.add_subplot()
         sc = ax0.scatter(ay_list,ax_list, c=bodyslip_list)
         ax0.set_xlabel('Ay')
         ax0.set_ylabel('Ax')
-        plt.colorbar(sc, ax=ax0, label='body slip (rad)')
-    
+        plt.colorbar(sc, ax=ax0, label='body slip (rad)')   
 
         fig1 = plt.figure()
         ax1 = fig1.add_subplot()
@@ -98,6 +110,15 @@ class Vehicle:
         ax1.set_xlabel('Ay')
         ax1.set_ylabel('Psi_ddt')
         plt.colorbar(sc1, ax=ax1, label='body slip (rad)')
+        
+        fig2 = plt.figure()
+        ax2 = fig2.add_subplot()
+        for i, iso_steer in enumerate(steered_angle_set):
+            plt.plot(ay_mat[i],psi_ddt_mat[i],color='red')
+            plt.plot(ay_mat.T[i],psi_ddt_mat.T[i],color='blue')
+        plt.grid()
+    
+        plt.show()
         plt.show()
         plt.show()
   

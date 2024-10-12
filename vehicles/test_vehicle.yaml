@@ -6,7 +6,7 @@ params:
   # Note: put units in quotes "[unit]" to treat as dimensionless (ex: rpm)
   ## High-Level
   mass: 595lb # Total weight
-  cg_bias_f: 0.5 # % CG bias forwards [0-1]
+  cg_bias_f: 0.4 # % CG bias forwards [0-1]
   cg_height: 12.0866in # CG Height
   wheelbase: 1.535m # Wheelbase 
   trackwidth_f: 48.875in  # Front trackwidth
@@ -26,6 +26,8 @@ params:
   ride_rate_r: 30000N/m # Rear ride rate (Single wheel)
   wheel_rate_f: 40000N/m # Front wheel rate (Single wheel)
   wheel_rate_r: 40000N/m # Rear wheel rate (Single wheel)
+  max_travel_f: 30mm # Front max travel
+  max_travel_r: 30mm # Rear max travel
   tire_radius: 0.2032m # Tire radius
   static_camber_f: -1deg
   static_camber_r: -1deg

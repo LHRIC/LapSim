@@ -30,20 +30,24 @@ class VehicleState:
         residuals = [sum_forces[0], sum_forces[1], sum_moments[2]]
         return residuals
 
-    def eval(self,v,beta,delta,eta,x_ddt,y_ddt,psi_ddt,residuals):
+    def eval(self,v,psi_dt,beta,delta,eta,x_ddt,y_ddt,psi_ddt,residuals):
         # Initialize Tires
-        self.fl = TireState(self)
-        self.fr = TireState(self)
-        self.rl = TireState(self)
-        self.rr = TireState(self)
+        
         self.forces=[]
         self.moments=[]
         self.v=v # Tangential velocity
+        self.psi_dt = psi_dt # Yaw rate
         self.beta=beta # Body slip
         self.delta=delta # Steered angle
         self.eta=eta # 'Throttle' 
         self.x_ddt=x_ddt # Ax
         self.y_ddt=y_ddt # Ay
+        # Initialize tire objects
+        self.fl = TireState(self)
+        self.fr = TireState(self)
+        self.rl = TireState(self)
+        self.rr = TireState(self)
+        # print(f'Ax {self.x_ddt} Ay {self.y_ddt}')
         self.psi_ddt=psi_ddt # Yaw accel
         # Each function updates: self.[fl,fr,rl,rr] | self.forces | self.moments
         self.dyn.static_weight(self) # Gravity effects

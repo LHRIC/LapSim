@@ -7,7 +7,7 @@ evaluation_mode: 'endurance' # endurance
 velocity_range: [10,10,1] # m/s, m/s , N
 body_slip_range: [-0.26,0.26, 30] # rad, rad , N
 steered_angle_range: [-0.26,0.26, 30] # rad, rad , N
-
+yaw_rate_range: [0,0,1]
 
 # Paths
 paths:
