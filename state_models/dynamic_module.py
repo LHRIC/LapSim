@@ -18,10 +18,10 @@ class DynModel:
         self.anti_squat = model.params['anti_squat']
         self.anti_dive = model.params['anti_dive']
         self.anti_lift = model.params['anti_lift']
-        self.fl_pos = [self.cg_bias_f*self.wheelbase, self.trackwidth_f/2, 0]
-        self.fr_pos = [self.cg_bias_f*self.wheelbase,-self.trackwidth_f/2, 0]
-        self.rl_pos = [(self.cg_bias_f-1)*self.wheelbase, self.trackwidth_r/2, 0]
-        self.rr_pos = [(self.cg_bias_f-1)*self.wheelbase, -self.trackwidth_r/2, 0]
+        self.fl_pos = [(1-self.cg_bias_f)*self.wheelbase, self.trackwidth_f/2, 0]
+        self.fr_pos = [(1-self.cg_bias_f)*self.wheelbase,-self.trackwidth_f/2, 0]
+        self.rl_pos = [-self.cg_bias_f*self.wheelbase, self.trackwidth_r/2, 0]
+        self.rr_pos = [-self.cg_bias_f*self.wheelbase, -self.trackwidth_r/2, 0]
         # print(f'fl_pos {self.fl_pos}')
         # print(f'fr_pos {self.fr_pos}')
         # print(f'rl_pos {self.rl_pos}')

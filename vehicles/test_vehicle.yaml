@@ -6,12 +6,12 @@ params:
   # Note: put units in quotes "[unit]" to treat as dimensionless (ex: rpm)
   ## High-Level
   mass: 595lb # Total weight
-  cg_bias_f: 0.4 # % CG bias forwards [0-1]
+  cg_bias_f: 0.6 # % CG bias forwards [0-1]
   cg_height: 12.0866in # CG Height
   wheelbase: 1.535m # Wheelbase 
   trackwidth_f: 48.875in  # Front trackwidth
   trackwidth_r: 48.875in # Rear trackwidth
-  inertia_tensor: [[1,1,1],[1,1,1],[1,1,1]] #TODO Fill with actual values
+  inertia_tensor: [[1,1,1],[1,1,1],[1,1,132.29]] #TODO Fill with actual values
 
   ## Suspension
   rollc_f: 0.028m # Front roll center height (from ground)
@@ -31,8 +31,8 @@ params:
   tire_radius: 0.2032m # Tire radius
   static_camber_f: -1deg
   static_camber_r: -1deg
-  camber_gain_f: -0.01deg/mm
-  camber_gain_r: -0.02deg/mm
+  camber_gain_f: 0.0deg/mm
+  camber_gain_r: 0.0deg/mm
   static_toe_f: 0deg
   static_toe_r: 0deg
   
