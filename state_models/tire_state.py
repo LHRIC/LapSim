@@ -31,16 +31,16 @@ class TireState:
         self.fy = fxy*fy_1*np.sign(self.alpha)
 
     def mf52(self):
-        #FIXME MAJOR MAJOR WIP
         mf52 = MF52()
         self.fy0 = mf52.Fy(Fz=self.fz,Alpha=self.alpha, Gamma=self.gamma)*self.friction_scaling_y
         fx_set=[]
+        # TODO Optimize this
         kappa_set = np.linspace(0,1,100)
         for kappa in np.linspace(0,1,100):
             fx_set.append(mf52.Fx(Fz=self.fz, Kappa=kappa, Gamma=self.gamma)*self.friction_scaling_x)
         if self.fx_max is not None and max(fx_set) <= self.fx_max: # Power limited
             self.fx0 = self.fx_max
-            self.kappa = np.interp(fx_set,self.fx_max,kappa_set)
+            self.kappa = np.interp(self.fx_max,fx_set,kappa_set)
         else: # Grip limited
             idx = np.argmax(fx_set)
             self.fx0 = fx_set[idx]

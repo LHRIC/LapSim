@@ -37,9 +37,6 @@ class Vehicle:
             fr_list.append(vehicle_state.fr.fz)
             rl_list.append(vehicle_state.rl.fz)
             rr_list.append(vehicle_state.rr.fz)
-        # plt.scatter(rng,fl_list)
-        # plt.scatter(rng,fr_list)
-        # plt.show()
 
     def _generate(self,cfg:dict):
         print('generating response surface')
@@ -48,7 +45,7 @@ class Vehicle:
         velocity_set=_param_set(cfg['velocity_range'])
         body_slip_set=_param_set(cfg['body_slip_range'])
         steered_angle_set=_param_set(cfg['steered_angle_range'])
-        throttle_set = np.linspace(-1,1,2)
+        throttle_set = np.linspace(1,1,1)
         x0 = [0,0,0]
         dim = np.prod(list(map(len,[velocity_set,body_slip_set,steered_angle_set,throttle_set])))
         surface_x = np.zeros((dim,4))
@@ -62,20 +59,47 @@ class Vehicle:
                 for delta in steered_angle_set:
                     for eta in throttle_set:
                         def _solve(x):
-                            print(f'{self.count} x:: {x}')
+                            # print(f'{self.count} x:: {x}')
                             r = vehicle_state.eval(v,beta,delta,eta,x[0],x[1],x[2],residuals=True)
-                            print(f'{self.count} RESIDUALS:: {r}')
+                            # print(f'{self.count} RESIDUALS:: {r}')
                             self.count += 1
                             return r
-                        soln = root(_solve,x0,method='hybr') # FIXME model does not converge ATM -> Need to figure out tires
+                        soln = root(_solve,x0,method='hybr')
+                        # print(soln)
                         
                         # The following two arrays compose the response surface the model will be pulling from
                         surface_x[index]=[v,beta,delta,eta]
                         surface_y[index]=soln.x
                         x0 = soln.x
                         index+=1
+                        print(f'{index}/{dim}')
 
-  
+        # Plotting
+
+        ax_list = [idx[0]/9.81 for idx in surface_y]
+        ay_list = [idx[1]/9.81 for idx in surface_y]
+        psi_ddt_list = [idx[2] for idx in surface_y]
+        v_list = [idx[0] for idx in surface_x]
+        steer_list = [idx[2] for idx in surface_x]
+        bodyslip_list = [idx[1] for idx in surface_x]
+
+        
+        fig0 = plt.figure()
+        ax0 = fig0.add_subplot()
+        sc = ax0.scatter(ay_list,ax_list, c=bodyslip_list)
+        ax0.set_xlabel('Ay')
+        ax0.set_ylabel('Ax')
+        plt.colorbar(sc, ax=ax0, label='body slip (rad)')
+    
+
+        fig1 = plt.figure()
+        ax1 = fig1.add_subplot()
+        sc1 = ax1.scatter(ay_list,psi_ddt_list, c=bodyslip_list)
+        ax1.set_xlabel('Ay')
+        ax1.set_ylabel('Psi_ddt')
+        plt.colorbar(sc1, ax=ax1, label='body slip (rad)')
+        plt.show()
+        plt.show()
   
         
 

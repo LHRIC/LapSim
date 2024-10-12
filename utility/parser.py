@@ -27,7 +27,7 @@ def convert(params:dict):
                 value_adjusted=value_raw.to('radian')
             print(f'{key}: {ureg.Quantity(value_raw)} -> {value_adjusted}')
             kgms_params_list.append((key,value_adjusted.magnitude))
-        except (ValueError, TypeError):
+        except:
             kgms_params_list.append((key,value))
     kgms_params = dict(kgms_params_list)
     print(kgms_params)

@@ -22,10 +22,10 @@ class DynModel:
         self.fr_pos = [self.cg_bias_f*self.wheelbase,-self.trackwidth_f/2, 0]
         self.rl_pos = [(self.cg_bias_f-1)*self.wheelbase, self.trackwidth_r/2, 0]
         self.rr_pos = [(self.cg_bias_f-1)*self.wheelbase, -self.trackwidth_r/2, 0]
-        print(f'fl_pos {self.fl_pos}')
-        print(f'fr_pos {self.fr_pos}')
-        print(f'rl_pos {self.rl_pos}')
-        print(f'rr_pos {self.rr_pos}')
+        # print(f'fl_pos {self.fl_pos}')
+        # print(f'fr_pos {self.fr_pos}')
+        # print(f'rl_pos {self.rl_pos}')
+        # print(f'rr_pos {self.rr_pos}')
 
     def static_weight(self,model: 'vehicle_state.VehicleState'):
         self.mass_f = self.mass*self.cg_bias_f
@@ -126,7 +126,7 @@ class DynModel:
         # TODO Ackermann
         static_toe_f = model.params['static_toe_f']
         static_toe_r = model.params['static_toe_r']
-        psi_dt = model.y_ddt/model.v
+        psi_dt = model.y_ddt/model.v # TODO MAKE THIS SWEPT?
 
         # Inertial frame car velocity vector
         v_vec = [model.v*np.cos(model.beta),model.v*np.sin(model.beta),0]
@@ -142,10 +142,10 @@ class DynModel:
         model.fr.alpha = model.delta + static_toe_f - np.arctan2(fr_vel[1],fr_vel[0])
         model.rl.alpha = static_toe_r - np.arctan2(rl_vel[1],rl_vel[0])
         model.rr.alpha = static_toe_r - np.arctan2(rr_vel[1],rr_vel[0])
-        print(f'FL_alpha {model.fl.alpha}')
-        print(f'FR_alpha {model.fr.alpha}')
-        print(f'RL_alpha {model.rl.alpha}')
-        print(f'RR_alpha {model.rr.alpha}')
+        # print(f'FL_alpha {model.fl.alpha}')
+        # print(f'FR_alpha {model.fr.alpha}')
+        # print(f'RL_alpha {model.rl.alpha}')
+        # print(f'RR_alpha {model.rr.alpha}')
 
         # Steer rotation matricies
         # TODO this will break once I add ackerman
@@ -164,20 +164,20 @@ class DynModel:
         model.forces.append(model.rl.f_vec)
         model.forces.append(model.rr.f_vec)
 
-        print(f'FL_f: {fl_adjusted_f}')
-        print(f'FR_f: {fr_adjusted_f}')
-        print(f'RL_f: {model.rl.f_vec}')
-        print(f'RR_f: {model.rr.f_vec}')
+        # print(f'FL_f: {fl_adjusted_f}')
+        # print(f'FR_f: {fr_adjusted_f}')
+        # print(f'RL_f: {model.rl.f_vec}')
+        # print(f'RR_f: {model.rr.f_vec}')
         
         fl_moment = np.cross(self.fl_pos,model.fl.f_vec)
         fr_moment = np.cross(self.fr_pos,model.fr.f_vec)
         rl_moment = np.cross(self.rl_pos,model.rl.f_vec)
         rr_moment = np.cross(self.rr_pos,model.rr.f_vec)
 
-        print(f'FL_m: {fl_moment}')
-        print(f'FR_m: {fr_moment}')
-        print(f'RL_m: {rl_moment}')
-        print(f'RR_m: {rr_moment}')
+        # print(f'FL_m: {fl_moment}')
+        # print(f'FR_m: {fr_moment}')
+        # print(f'RL_m: {rl_moment}')
+        # print(f'RR_m: {rr_moment}')
 
         model.moments.append(fl_moment)
         model.moments.append(fr_moment)

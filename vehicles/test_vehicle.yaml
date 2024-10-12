@@ -44,7 +44,6 @@ params:
   friction_scaling_x: 0.6 # % Tire friction scaling in x-axis
   friction_scaling_y: 0.6 # % Tire friction scaling in y-axis
 
-
   ## Powertrain
   torque_curve_file: 'vehicles/23_torque_curve.csv' # Torque curve filepath .csv
   primary_reduction: 76/36 #Idk tbh
@@ -55,4 +54,3 @@ params:
   
 # Swept Parameters
 swept_params:  #WIP
-  

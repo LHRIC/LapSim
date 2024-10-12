@@ -9,7 +9,7 @@ class VehicleState:
     def __init__(self,params:dict) -> None:
         # Pull parameter dictionary
         self.params = params
-        print(self.params)
+        # print(self.params)
         # Initialize models
         self.dyn = DynModel(self)
         self.ptn = PtnModel(self)
@@ -21,13 +21,13 @@ class VehicleState:
     def _residuals(self):
         mz = np.linalg.matmul(self.params['inertia_tensor'],[0,0,self.psi_ddt])
         self.moments.append(mz)
-        print (f'Forces: {self.forces}')
-        print (f'Moments: {self.moments}')
+        # print (f'Forces: {self.forces}')
+        # print (f'Moments: {self.moments}')
         sum_forces = np.add.reduce(self.forces)
         sum_moments = np.add.reduce(self.moments)
-        print (f'sum_Forces: {sum_forces}')
-        print (f'sum_Moments: {sum_moments}')
-        residuals = [*sum_forces, *sum_moments]
+        # print (f'sum_Forces: {sum_forces}')
+        # print (f'sum_Moments: {sum_moments}')
+        residuals = [sum_forces[0], sum_forces[1], sum_moments[2]]
         return residuals
 
     def eval(self,v,beta,delta,eta,x_ddt,y_ddt,psi_ddt,residuals):
@@ -60,7 +60,7 @@ class VehicleState:
 
         if residuals == True:
             r = self._residuals() 
-            print(f'r {r}')
+            # print(f'r {r}')
             return r
         
 
