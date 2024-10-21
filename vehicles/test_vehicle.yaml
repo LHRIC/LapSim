@@ -6,7 +6,7 @@ params:
   # Note: put units in quotes "[unit]" to treat as dimensionless (ex: rpm)
   ## High-Level
   mass: 595lb # Total weight
-  cg_bias_f: 0.6 # % CG bias forwards [0-1]
+  cg_bias_f: 0.5 # % CG bias forwards [0-1]
   cg_height: 12.0866in # CG Height
   wheelbase: 1.535m # Wheelbase 
   trackwidth_f: 48.875in  # Front trackwidth
@@ -29,8 +29,8 @@ params:
   max_travel_f: 30mm # Front max travel
   max_travel_r: 30mm # Rear max travel
   tire_radius: 0.2032m # Tire radius
-  static_camber_f: -1deg
-  static_camber_r: -1deg
+  static_camber_f: 0deg
+  static_camber_r: 0deg
   camber_gain_f: 0.0deg/mm
   camber_gain_r: 0.0deg/mm
   static_toe_f: 0deg
@@ -39,7 +39,7 @@ params:
   ## Aero
   cla: 2.8m^2 # Product of Coefficent of Lift x Reference Area
   cda: 1.1m^2 # Product of Coefficent of Drag x Reference Area
-  cop: 0.46 # % Center of pressure bias forwards [0-1]
+  cop: 0.5 # % Center of pressure bias forwards [0-1]
 
   ## Tires
   tire_file: '' # Tire filepath
@@ -48,11 +48,11 @@ params:
 
   ## Powertrain
   torque_curve_file: 'vehicles/23_torque_curve.csv' # Torque curve filepath .csv
-  primary_reduction: 76/36 #Idk tbh
+  primary_reduction: 76/36 # Primary reduction
   gear_ratios: {1: 33/12, 2: 32/16, 3: 30/18, 4: 26/18, 5: 30/23, 6: 29/24} # Gear ratios at corresponding gears
   final_drive: 37/11 
   shiftpoint: 12500rpm # RPM to shift at
   drivetrain_losses: 0.85 # % Drivetrain 'efficency'(?) #TODO make this 1-% ?
   
 # Swept Parameters
-swept_params:  #WIP
+swept_params:

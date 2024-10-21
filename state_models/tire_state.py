@@ -1,6 +1,10 @@
 from state_models import vehicle_state
 from state_models.mf_52 import MF52 # Using Vogel_sim MF52 for now
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import minimize_scalar, root_scalar
+
+
 # TODO Rewrite MF52?
 class TireState:
     def __init__(self,model: 'vehicle_state.VehicleState'):
@@ -14,14 +18,14 @@ class TireState:
         self.friction_scaling_y = model.params['friction_scaling_y']
         self.fx_max = None
         self.free_rolling = False
-        # print(f'Ax {model.x_ddt} Ay {model.y_ddt}')
+        self.dir = np.sign(model.eta)
+
     def _comstock(self):
         # Comstock model only works in positive domains
         s = abs(self.kappa)
         a = abs(self.alpha)
         fx0 = abs(self.fx0)
         fy0 = abs(self.fy0)
-        # print(f'fx0, fy0 {fx0} {fy0}')
         Cs = abs(self.c_kappa)
         Ca = abs(self.c_alpha)
         # TODO Switch statement this V
@@ -45,23 +49,40 @@ class TireState:
 
     def mf52(self):
         mf52 = MF52()
+        if self.fz == 0:
+            self.f_vec = [0,0,0]
+            return
         self.fy0 = mf52.Fy(Fz=self.fz,Alpha=self.alpha, Gamma=self.gamma)*self.friction_scaling_y
         fx_set=[]
         # TODO Optimize this
-        kappa_set = np.linspace(0,1,100)
+
         if self.free_rolling == True:
             self.kappa = 0.0
             self.fx0 = 0.0 # TODO add rolling resistance
+
         else:
-            for kappa in np.linspace(0,1,100):
-                fx_set.append(mf52.Fx(Fz=self.fz, Kappa=kappa, Gamma=self.gamma)*self.friction_scaling_x)
-            if self.fx_max is not None and max(fx_set) <= self.fx_max: # Power limited
+
+            def _minum_attempt(x):
+                return -self.dir*mf52.Fx(Fz=self.fz,Kappa=x,Gamma=self.gamma)
+            def _root_attempt(x):
+                return self.fx_max - self.dir*mf52.Fx(Fz=self.fz,Kappa=x,Gamma=self.gamma)*self.friction_scaling_x
+            
+            kappa_max = minimize_scalar(_minum_attempt,bounds=(0,1) if self.dir==1 else (-1,0)).x
+            fx_grip_max = mf52.Fx(Fz=self.fz,Kappa=kappa_max,Gamma=self.gamma)*self.friction_scaling_x
+
+            # kappa_set = np.linspace(0,1*self.dir,1000)
+            # for kappa in kappa_set:
+            #     fx_set.append(mf52.Fx(Fz=self.fz, Kappa=kappa, Gamma=self.gamma)*self.friction_scaling_x)
+
+            if self.fx_max is not None and np.abs(fx_grip_max) >= np.abs(self.fx_max): # Power/Brake limited
                 self.fx0 = self.fx_max
-                self.kappa = np.interp(self.fx_max,fx_set,kappa_set)
+                self.kappa = root_scalar(_root_attempt,x0=0)
+
             else: # Grip limited
-                idx = np.argmax(fx_set)
-                self.fx0 = fx_set[idx]
-                self.kappa = kappa_set[idx]
+                self.kappa = kappa_max
+                self.fx0 = fx_grip_max
+            # plt.plot(kappa_set,fx_set)
+            # plt.scatter(kappa_set[idx],fx_set[idx])
 
         # Corner stiffnesses
         self.c_kappa = mf52.Fx(self.fz,0.05,self.gamma)/0.05
@@ -69,4 +90,4 @@ class TireState:
         # print(f'fx0 {self.fx0} fy0 {self.fy0}')
         self._comstock()    
         
-        self.f_vec = [self.fx,self.fy,self.fz] 
+        self.f_vec = np.array([self.fx,self.fy,self.fz] )

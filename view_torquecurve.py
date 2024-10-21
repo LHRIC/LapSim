@@ -26,7 +26,7 @@ for v in v_set:
         # print ('shifting')
         gear += 1
         shaft_rpm = raw_shaft_rpm*gear_ratios[gear]
-    print(f'gear: {gear} raw rpm {raw_shaft_rpm} adj_rpm {shaft_rpm}')
+    # print(f'gear: {gear} raw rpm {raw_shaft_rpm} adj_rpm {shaft_rpm}')
     max_torque = np.interp(shaft_rpm,torque_curve[0],torque_curve[1])
     torque_list.append(max_torque)
     rpm_list.append(shaft_rpm)

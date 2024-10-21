@@ -3,17 +3,19 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from state_models.mf_52 import MF52
 from state_models.tire_state import TireState
+import pandas as pd
 
-def combined_slip (alphas,kappas,n):
+def combined_slip (alphas,kappas,fz,n):
     class psuedoVehicle:
         def __init__(self):
-            self.params = {'friction_scaling_x': 1, 'friction_scaling_y': 1}
+            self.params = {'friction_scaling_x': 0.6, 'friction_scaling_y': 0.6}
+            self.eta = 0
     vehicle = psuedoVehicle()
     alpha_set = np.linspace(alphas[0],alphas[1],n)
     kappa_set = np.linspace(kappas[0],kappas[1],n)
     tire = TireState(vehicle)
     mf52 = MF52()
-    tire.fz = 1000
+    tire.fz = fz
     fx_list = np.zeros((n,n))
     fy_list = np.zeros((n,n))
     alpha_list = np.zeros((n,n))
@@ -32,6 +34,7 @@ def combined_slip (alphas,kappas,n):
             fy_list[i,j] = tire.fy
             kappa_list[i,j] = kappa
             alpha_list[i,j] = alpha
+   
     # G-G Diagram
     fig0 = plt.figure()
     ax0 = fig0.add_subplot()
@@ -61,4 +64,41 @@ def combined_slip (alphas,kappas,n):
     ax1.set_ylabel('slip ratio')
     ax1.set_zlabel('Fy')
     ax1.set_title('Fy')
+    plt.show()
+
+    data = {'Slip angle': alpha_list.flatten(), 'Slip ratio': kappa_list.flatten(), 'Fx': fx_list.flatten(), 'Fy': fy_list.flatten()}
+    df = pd.DataFrame(data)
+    df.to_csv(f'{fz}N')
+
+def single_slip(alphas,fzs,n1,n2):
+    class psuedoVehicle:
+        def __init__(self):
+            self.params = {'friction_scaling_x': 0.6, 'friction_scaling_y': 0.6}
+            self.eta = 0
+    vehicle = psuedoVehicle()
+    tire = TireState(vehicle)
+    mf52 = MF52()
+    alpha_set = np.linspace(alphas[0],alphas[1],n1)
+    fz_set = np.linspace(fzs[0],fzs[1],n2)
+    fy_list = np.zeros((n2,n1))
+    alpha_list = np.zeros((n2,n1))
+
+    for i, fz in enumerate(fz_set):
+        for j, alpha in enumerate(alpha_set):
+            tire.fz = fz
+            tire.alpha=np.deg2rad(alpha)
+            tire.fy0=mf52.Fx(tire.fz,tire.alpha,tire.gamma)
+            fy_list[i,j]=tire.fy0
+            alpha_list[i,j]=tire.alpha
+    
+    fig0=plt.figure()
+    ax0 = fig0.add_subplot()
+    ax0.set_xlabel('Slip Angle')
+    ax0.set_ylabel('Fy')
+
+    for i, fz in enumerate(fz_set):
+        ax0.plot(alpha_list[i],fy_list[i],label=f'{fz}')
+        # ax0.set_label(f'{fz}')
+        # plt.annotate(f'{fz}',(alpha_list[i,n1-1],fy_list[i,n1-1]))
+    ax0.legend()
     plt.show()

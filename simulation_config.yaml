@@ -5,9 +5,10 @@ evaluation_mode: 'endurance' # endurance
 
 # Performance envelope
 velocity_range: [10,10,1] # m/s, m/s , N
-body_slip_range: [-0.26,0.26, 30] # rad, rad , N
-steered_angle_range: [-0.26,0.26, 30] # rad, rad , N
-yaw_rate_range: [0,0,1]
+body_slip_range: [0,0, 1] # rad, rad , N
+steered_angle_range: [-0.02,0.02, 9] # rad, rad , N
+yaw_rate_range: [0,0,1] # rad/s, rad/s, N
+throttle_range: [-1,-1,1] 
 
 # Paths
 paths:

@@ -61,10 +61,16 @@ class VehicleState:
         self.rl.mf52()
         self.rr.mf52()
         self.dyn.tire_forces(self) # Apply tire forces to car
-
+        # if np.isnan(self.fl.fz) or np.isnan(self.fr.fz):
+            # print(f'NAN @ Ax {self.x_ddt}, Ay {self.y_ddt}, Psi_dt {self.psi_dt}')
         if residuals == True:
             r = self._residuals() 
-            # print(f'r {r}')
+            if any(np.isnan(r)):
+                print(f'NAN @')
+                print(f'FL: {self.fl.f_vec}')
+                print(f'FR: {self.fr.f_vec}')
+                print(f'RL: {self.rl.f_vec}')
+                print(f'RR: {self.rr.f_vec}')
             return r
         
 
