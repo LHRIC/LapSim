@@ -1,13 +1,18 @@
 from state_models import vehicle_state
 from state_models.mf_52 import MF52 # Using Vogel_sim MF52 for now
+from state_models.mf_61 import MF61
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize_scalar, root_scalar
+from scipy.io import loadmat
 
 
 # TODO Rewrite MF52?
 class TireState:
     def __init__(self,model: 'vehicle_state.VehicleState'):
+        self.xparams = np.transpose(loadmat("./state_models/18.0x6.0-10_R20_DriveBrakeComb.mat")["x0"])
+        self.yparams = np.transpose(loadmat("./state_models/16x7.5-10_R20_Cornering.mat")["x0"])
+        self.mf = MF61(self.xparams,self.yparams)
         self.fz = 0.0
         self.fz_elas = 0.0
         self.z = 0.0
@@ -46,6 +51,10 @@ class TireState:
             self.fx = fxy*fx_1*np.sign(self.kappa)
             self.fy = fxy*fy_1*np.sign(self.alpha)
         # print(f'fx {self.fx} fy {self.fy} fz {self.fz}')
+    
+    def eval(self):
+        
+        return
 
     def mf52(self):
         mf52 = MF52()
