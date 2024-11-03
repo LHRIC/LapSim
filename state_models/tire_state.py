@@ -5,13 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize_scalar, root_scalar
 from scipy.io import loadmat
+from Utility.parser import parse_tir
 
 
 # TODO Rewrite MF52?
 class TireState:
     def __init__(self,model: 'vehicle_state.VehicleState'):
-        self.xparams = np.transpose(loadmat("./state_models/18.0x6.0-10_R20_DriveBrakeComb.mat")["x0"])
-        self.yparams = np.transpose(loadmat("./state_models/16x7.5-10_R20_Cornering.mat")["x0"])
+        self.params = parse_tir(model.params['tire_file'])
         self.mf = MF61(self.xparams,self.yparams)
         self.fz = 0.0
         self.fz_elas = 0.0

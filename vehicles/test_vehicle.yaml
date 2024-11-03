@@ -42,7 +42,7 @@ params:
   cop: 0.5 # % Center of pressure bias forwards [0-1]
 
   ## Tires
-  tire_file: '' # Tire filepath
+  tire_file: 'vehicles/FSAE_Defaults.tir' # Tire filepath
   friction_scaling_x: 0.6 # % Tire friction scaling in x-axis
   friction_scaling_y: 0.6 # % Tire friction scaling in y-axis
 
