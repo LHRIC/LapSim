@@ -53,10 +53,32 @@ class TireState:
         # print(f'fx {self.fx} fy {self.fy} fz {self.fz}')
     
     def eval(self):
-        
-        return
+        if self.fz == 0:
+            self.f_vec = [0,0,0]
+            return
 
+        self.fy0 = self.mf.fy(self.fz,self.alpha,self.gamma)
+
+        if self.free_rolling:
+            self.kappa = 0.0
+            self.fx0 = 0.0
+        else:
+            self.fx0 = self._idealfx()
+
+    def _idealfx(self):
+        def _minum_attempt(x):
+            '''Returns adjusted Fx such that it is always 
+            negative in the kappa domain'''
+            adj_fx = -self.dir*self.mf.fx(self.fz,x,self.gamma)
+            return adj_fx
+        def _root_attempt(x):
+
+        
+        
+        return 0
+    
     def mf52(self):
+        '''Deprecated function'''
         mf52 = MF52()
         if self.fz == 0:
             self.f_vec = [0,0,0]
