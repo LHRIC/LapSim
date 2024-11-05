@@ -40,8 +40,8 @@ class MF52:
         PHX2	=  self.Fx_params[12]   	
         PVX1	=  self.Fx_params[13]  	
         PVX2	=  self.Fx_params[14]
-
-        Fz0 = self.Fz0 * lambdaFz0
+        PEX1 = 0
+        Fz0 = self.Fz0 * lambdaFz0 # Temp fix
 
         dfz = (Fz - Fz0) / Fz0
         SVx  = Fz * (PVX1 + PVX2 * dfz) * lambdaVx * lambdaMux
@@ -53,11 +53,13 @@ class MF52:
 
         Cx = PCX1 * lambdaCx
         Dx = Mux * Fz
-        Ex = (PEX1 + PEX2 * dfz + PEX3 * dfz**2) * (1 - PEX4 * np.sign(KappaX) * lambdaEx)
+        Ex = (PEX1 + PEX2 * dfz + PEX3 * dfz**2) * (1 - PEX4 * np.sign(KappaX) ) * lambdaEx
+        # if Ex > 1:
+        #     Ex = 1
         Kx = Fz * (PKX1 + PKX2 * dfz) * math.exp(PKX3 * dfz) * lambdaKx
         Bx = Kx/(Cx * Dx)
         Fx0 = Dx * math.sin(Cx * math.atan(Bx * KappaX - Ex * (Bx * KappaX - math.atan(Bx * KappaX)))) + SVx
-
+        # print(f'D: {Dx} C: {Cx} B: {Bx} E: {Ex}')
         Fx = Fx0
 
         return Fx

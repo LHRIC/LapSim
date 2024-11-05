@@ -8,7 +8,6 @@ class Simulation:
         self.cfg = read_yaml(config_file)
         self.run_types: dict = {'single_run': self.single_run}
         self.evaluation_modes: dict = {'endurance': self.endurance}
-        self.run_types[self.cfg['simulation_type']]()
         try:
             self.run_types[self.cfg['simulation_type']]()
         except KeyError as e:

@@ -18,14 +18,10 @@ class DynModel:
         self.anti_squat = model.params['anti_squat']
         self.anti_dive = model.params['anti_dive']
         self.anti_lift = model.params['anti_lift']
-        self.fl_pos = [self.cg_bias_f*self.wheelbase, self.trackwidth_f/2, 0]
-        self.fr_pos = [self.cg_bias_f*self.wheelbase,-self.trackwidth_f/2, 0]
-        self.rl_pos = [(self.cg_bias_f-1)*self.wheelbase, self.trackwidth_r/2, 0]
-        self.rr_pos = [(self.cg_bias_f-1)*self.wheelbase, -self.trackwidth_r/2, 0]
-        print(f'fl_pos {self.fl_pos}')
-        print(f'fr_pos {self.fr_pos}')
-        print(f'rl_pos {self.rl_pos}')
-        print(f'rr_pos {self.rr_pos}')
+        self.fl_pos = [(1-self.cg_bias_f)*self.wheelbase, self.trackwidth_f/2, 0]
+        self.fr_pos = [(1-self.cg_bias_f)*self.wheelbase,-self.trackwidth_f/2, 0]
+        self.rl_pos = [-self.cg_bias_f*self.wheelbase, self.trackwidth_r/2, 0]
+        self.rr_pos = [-self.cg_bias_f*self.wheelbase, -self.trackwidth_r/2, 0]
 
     def static_weight(self,model: 'vehicle_state.VehicleState'):
         self.mass_f = self.mass*self.cg_bias_f
@@ -35,10 +31,10 @@ class DynModel:
         model.fr.fz += self.mass_f*g/2
         model.rl.fz += self.mass_r*g/2
         model.rr.fz += self.mass_r*g/2
-        model.fl.fz_elas += self.mass_f*g/2
-        model.fr.fz_elas += self.mass_f*g/2
-        model.rl.fz_elas += self.mass_r*g/2
-        model.rr.fz_elas += self.mass_r*g/2
+        # model.fl.fz_elas += self.mass_f*g/2
+        # model.fr.fz_elas += self.mass_f*g/2
+        # model.rl.fz_elas += self.mass_r*g/2
+        # model.rr.fz_elas += self.mass_r*g/2
         model.forces.append([0,0,-self.mass*g])
 
     def weight_transfer(self,model: 'vehicle_state.VehicleState'):
@@ -84,13 +80,15 @@ class DynModel:
         model.rl.fz_elas += dFz_elas_rl
         model.rr.fz_elas += dFz_elas_rr
 
-        model.forces.append([model.x_ddt*self.mass,model.y_ddt*self.mass,0]) # Body forces
+        model.forces.append([-model.x_ddt*self.mass, -model.y_ddt*self.mass,0]) # Body forces TODO move to residuals?
 
     def kinematic_eval(self,model: 'vehicle_state.VehicleState'):
         ride_rate_f = model.params['ride_rate_f']
         ride_rate_r = model.params['ride_rate_r']
         wheel_rate_f = model.params['wheel_rate_f']
         wheel_rate_r = model.params['wheel_rate_r']
+        max_travel_f = model.params['max_travel_f']
+        max_travel_r = model.params['max_travel_r']
         static_camber_f = model.params['static_camber_f']
         static_camber_r = model.params['static_camber_r']
         camber_gain_f = model.params['camber_gain_f']
@@ -98,11 +96,18 @@ class DynModel:
         tire_stiff_f = wheel_rate_f*ride_rate_f/(wheel_rate_f-ride_rate_f)
         tire_stiff_r = wheel_rate_r*ride_rate_r/(wheel_rate_r-ride_rate_r)
 
+        # Curb negative fz values TODO might not need this if i change the zero protection statement later on to include negative Fzs?
+        for tire in [model.fl, model.fr, model.rl, model.rr]:
+            if tire.fz < 0:
+                tire.fz = 0
+
         dz_sus_fl = model.fl.fz_elas / wheel_rate_f
         dz_sus_fr = model.fr.fz_elas / wheel_rate_f
         dz_sus_rl = model.rl.fz_elas / wheel_rate_r
         dz_sus_rr = model.rr.fz_elas / wheel_rate_r
 
+
+        # Ignoring tire deflections for now TODO springs in series
         dz_tire_fl = model.fl.fz / tire_stiff_f
         dz_tire_fr = model.fr.fz / tire_stiff_f
         dz_tire_rl = model.rl.fz / tire_stiff_r
@@ -113,6 +118,10 @@ class DynModel:
         dz_rl = dz_sus_rl + dz_tire_rl
         dz_rr = dz_sus_rr + dz_tire_rr
 
+        # Clamp suspension travel to maximums TODO: currently assuming symmetric travel limits
+        [dz_fl, dz_fr] = np.clip([dz_fl, dz_fr],-max_travel_f,max_travel_f)
+        [dz_rl, dz_rr] = np.clip([dz_rl, dz_rr],-max_travel_r,max_travel_r)
+        
         # Assumine front roll = rear roll & left pitch = right pitch
         model.roll = np.arcsin(((dz_fr-dz_fl)/self.trackwidth_f))
         model.pitch = np.arcsin((dz_fl-dz_rl)/self.wheelbase)
@@ -126,7 +135,7 @@ class DynModel:
         # TODO Ackermann
         static_toe_f = model.params['static_toe_f']
         static_toe_r = model.params['static_toe_r']
-        psi_dt = model.y_ddt/model.v
+        psi_dt = model.psi_dt
 
         # Inertial frame car velocity vector
         v_vec = [model.v*np.cos(model.beta),model.v*np.sin(model.beta),0]
@@ -142,10 +151,6 @@ class DynModel:
         model.fr.alpha = model.delta + static_toe_f - np.arctan2(fr_vel[1],fr_vel[0])
         model.rl.alpha = static_toe_r - np.arctan2(rl_vel[1],rl_vel[0])
         model.rr.alpha = static_toe_r - np.arctan2(rr_vel[1],rr_vel[0])
-        print(f'FL_alpha {model.fl.alpha}')
-        print(f'FR_alpha {model.fr.alpha}')
-        print(f'RL_alpha {model.rl.alpha}')
-        print(f'RR_alpha {model.rr.alpha}')
 
         # Steer rotation matricies
         # TODO this will break once I add ackerman
@@ -163,21 +168,11 @@ class DynModel:
         model.forces.append(fr_adjusted_f)
         model.forces.append(model.rl.f_vec)
         model.forces.append(model.rr.f_vec)
-
-        print(f'FL_f: {fl_adjusted_f}')
-        print(f'FR_f: {fr_adjusted_f}')
-        print(f'RL_f: {model.rl.f_vec}')
-        print(f'RR_f: {model.rr.f_vec}')
         
         fl_moment = np.cross(self.fl_pos,model.fl.f_vec)
         fr_moment = np.cross(self.fr_pos,model.fr.f_vec)
         rl_moment = np.cross(self.rl_pos,model.rl.f_vec)
         rr_moment = np.cross(self.rr_pos,model.rr.f_vec)
-
-        print(f'FL_m: {fl_moment}')
-        print(f'FR_m: {fr_moment}')
-        print(f'RL_m: {rl_moment}')
-        print(f'RR_m: {rr_moment}')
 
         model.moments.append(fl_moment)
         model.moments.append(fr_moment)

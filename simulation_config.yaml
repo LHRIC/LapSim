@@ -4,10 +4,11 @@ simulation_type: 'single_run' # single_run, sweep
 evaluation_mode: 'endurance' # endurance
 
 # Performance envelope
-velocity_range: [10,10,1] # m/s, m/s , N
-body_slip_range: [-0.2,0.2, 5] # rad, rad , N
-steered_angle_range: [-0.2,0.2, 5] # rad, rad , N
-
+velocity_range: [30,30,1] # m/s, m/s , N
+body_slip_range: [-8,8,30] # deg, deg , N
+steered_angle_range: [-15,15,30] # deg, deg , N
+yaw_rate_range: [0,0,1] # rad/s, rad/s, N
+throttle_range: [0,0,1] 
 
 # Paths
 paths:

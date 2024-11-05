@@ -27,8 +27,29 @@ def convert(params:dict):
                 value_adjusted=value_raw.to('radian')
             print(f'{key}: {ureg.Quantity(value_raw)} -> {value_adjusted}')
             kgms_params_list.append((key,value_adjusted.magnitude))
-        except (ValueError, TypeError):
+        except:
             kgms_params_list.append((key,value))
     kgms_params = dict(kgms_params_list)
     print(kgms_params)
     return kgms_params # FYI | deg -> rad | rpm -> rad/s 
+
+def parse_tir(filepath):
+    parsed_data = {}
+
+    with open(filepath, "r") as file:
+        for line in file:
+            if '=' in line:
+                # Split key value pair on = 
+                key, value = line.strip().split('=', 1)
+                value = value.strip()
+
+                # Remove everything after $
+                value = value.split('$', 1)[0].strip()
+
+                # Convert value to int or float if possible
+                if value.lstrip('-').replace('.', '', 1).isdigit():
+                    value = float(value) if '.' in value else int(value)
+
+                parsed_data[key.strip()] = value
+
+    return parsed_data
