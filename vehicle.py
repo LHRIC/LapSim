@@ -5,6 +5,7 @@ from state_models.vehicle_state import VehicleState
 from matplotlib import pyplot as plt
 from scipy.optimize._root import root
 import scipy.optimize
+
 class Vehicle:
 
     def __init__(self, cfg:dict, sweep_idx):
@@ -61,22 +62,21 @@ class Vehicle:
                     for delta in steered_angle_set:
                         for eta in throttle_set:
                             def _solve(x):
-                                # print(f'{self.count} x:: {x}')
-                                r = vehicle_state.eval(v,psi_dt,beta,delta,eta,x[0],x[1],x[2],residuals=True)
-                                # print(f'{self.count} RESIDUALS:: {r}')
+                                r = vehicle_state.eval(v,psi_dt,np.deg2rad(beta),np.deg2rad(delta),eta,x[0],x[1],x[2],residuals=True)
                                 self.count += 1
                                 return r
-                            soln = root(_solve,x0,method='hybr',options={"xtol":1e-10})
-                            # print(soln)
-                            
+                            soln = root(_solve,x0,method='hybr',options={"xtol":1e-5,"maxfev":100})
+                            if soln.success == False:
+                                print('solution did not converge')
+                                print(f'beta: {beta} delta: {delta}')
+                                print(soln)
+        
                             # The following two arrays compose the response surface the model will be pulling from
                             surface_x[index]=[v,psi_dt,beta,delta,eta]
                             surface_y[index]=soln.x
 
                             # Evaluate vehicle state at solution
                             vehicle_state.eval(v,psi_dt,beta,delta,eta,soln.x[0],soln.x[1],soln.x[2],residuals=False)
-                            for tire in ['fl','fr','rl','rr']:
-                                print(vehicle_state.tire.f_vec)
                             # x0 = soln.x
                             index+=1
                             print(f'{index}/{dim}')
@@ -101,10 +101,6 @@ class Vehicle:
         eta_list = [idx[4] for idx in surface_x]
         idx_list = [i for i, val in enumerate(surface_x)]
 
-        # ay_mat = np.reshape(ay_list,(30,30))
-        # psi_ddt_mat = np.reshape(psi_ddt_list, (30,30))
-        # steer_mat = np.reshape(steer_list,(30,30))
-        # bodyslip_mat = np.reshape(bodyslip_list,(30,30))
 
         # fig3 = plt.figure()
         # ax3 = fig3.add_subplot()
@@ -131,16 +127,20 @@ class Vehicle:
         # ax1.set_xlabel('Ay')
         # ax1.set_ylabel('Psi_ddt')
         # plt.colorbar(sc1, ax=ax1, label='body slip (rad)')
+
+
+        ay_mat = np.reshape(ay_list,(30,30))
+        psi_ddt_mat = np.reshape(psi_ddt_list, (30,30))
+        steer_mat = np.reshape(steer_list,(30,30))
+        bodyslip_mat = np.reshape(bodyslip_list,(30,30))
         
-        # fig2 = plt.figure()
-        # ax2 = fig2.add_subplot()
-        # for i, iso_steer in enumerate(steered_angle_set):
-        #     plt.plot(ay_mat[i],psi_ddt_mat[i],color='red')
-        #     plt.plot(ay_mat.T[i],psi_ddt_mat.T[i],color='blue')
-        # plt.grid()
+        fig2 = plt.figure()
+        ax2 = fig2.add_subplot()
+        for i, iso_steer in enumerate(steered_angle_set):
+            plt.plot(ay_mat[i],psi_ddt_mat[i],color='red')
+            plt.plot(ay_mat.T[i],psi_ddt_mat.T[i],color='blue')
+        plt.grid()
     
-        plt.show()
-        plt.show()
         plt.show()
   
         

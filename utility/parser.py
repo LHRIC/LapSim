@@ -47,7 +47,7 @@ def parse_tir(filepath):
                 value = value.split('$', 1)[0].strip()
 
                 # Convert value to int or float if possible
-                if value.replace('.', '', 1).isdigit():
+                if value.lstrip('-').replace('.', '', 1).isdigit():
                     value = float(value) if '.' in value else int(value)
 
                 parsed_data[key.strip()] = value

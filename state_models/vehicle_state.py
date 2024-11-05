@@ -14,9 +14,16 @@ class VehicleState:
         self.dyn = DynModel(self)
         self.ptn = PtnModel(self)
         self.aero = AeroModel(self)
+        # Initialize Tire models
+        self.fl = TireState(self)
+        self.fr = TireState(self)
+        self.rl = TireState(self)
+        self.rr = TireState(self)
         # Sprung mass state
         self.roll = 0
         self.pitch = 0
+
+
 
     def _residuals(self):
         mz = np.linalg.matmul(self.params['inertia_tensor'],[0,0,self.psi_ddt])
@@ -32,7 +39,8 @@ class VehicleState:
 
     def eval(self,v,psi_dt,beta,delta,eta,x_ddt,y_ddt,psi_ddt,residuals):
         # Initialize Tires
-        
+        for tire in ['fl','fr','rl','rr']:
+            getattr(self,tire).fz = 0
         self.forces=[]
         self.moments=[]
         self.v=v # Tangential velocity
@@ -42,11 +50,6 @@ class VehicleState:
         self.eta=eta # 'Throttle' 
         self.x_ddt=x_ddt # Ax
         self.y_ddt=y_ddt # Ay
-        # Initialize tire objects
-        self.fl = TireState(self)
-        self.fr = TireState(self)
-        self.rl = TireState(self)
-        self.rr = TireState(self)
         # print(f'Ax {self.x_ddt} Ay {self.y_ddt}')
         self.psi_ddt=psi_ddt # Yaw accel
         # Each function updates: self.[fl,fr,rl,rr] | self.forces | self.moments
@@ -56,10 +59,10 @@ class VehicleState:
         self.dyn.kinematic_eval(self) # Suspension travel and inclination angle
         self.ptn.torque(self) #Powertrain and braking, updates max Fx for tires
         self.dyn.steering(self) # Evaluate steering angles
-        self.fl.mf52() # Evaluate tire forces
-        self.fr.mf52()
-        self.rl.mf52()
-        self.rr.mf52()
+        self.fl.eval(self.eta) # Evaluate tire forces
+        self.fr.eval(self.eta)
+        self.rl.eval(self.eta)
+        self.rr.eval(self.eta)
         self.dyn.tire_forces(self) # Apply tire forces to car
         # if np.isnan(self.fl.fz) or np.isnan(self.fr.fz):
             # print(f'NAN @ Ax {self.x_ddt}, Ay {self.y_ddt}, Psi_dt {self.psi_dt}')

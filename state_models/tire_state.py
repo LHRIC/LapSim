@@ -5,14 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize_scalar, root_scalar
 from scipy.io import loadmat
-from Utility.parser import parse_tir
-
+from utility.parser import parse_tir
 
 # TODO Rewrite MF52?
 class TireState:
     def __init__(self,model: 'vehicle_state.VehicleState'):
         self.params = parse_tir(model.params['tire_file'])
-        self.mf = MF61(self.xparams,self.yparams)
+        self.params['friction_scaling_x'] = model.params['friction_scaling_x']
+        self.params['friction_scaling_y'] = model.params['friction_scaling_y']
+        self.mf = MF61(self.params)
         self.fz = 0.0
         self.fz_elas = 0.0
         self.z = 0.0
@@ -23,7 +24,6 @@ class TireState:
         self.friction_scaling_y = model.params['friction_scaling_y']
         self.fx_max = None
         self.free_rolling = False
-        self.dir = np.sign(model.eta)
 
     def _comstock(self):
         # Comstock model only works in positive domains
@@ -52,18 +52,23 @@ class TireState:
             self.fy = fxy*fy_1*np.sign(self.alpha)
         # print(f'fx {self.fx} fy {self.fy} fz {self.fz}')
     
-    def eval(self):
+    def eval(self,eta):
         if self.fz == 0:
             self.f_vec = [0,0,0]
             return
 
         self.fy0 = self.mf.fy(self.fz,self.alpha,self.gamma)
-
+        self.dir = np.sign(eta)
         if self.free_rolling:
             self.kappa = 0.0
             self.fx0 = 0.0
         else:
-            self.fx0 = self._idealfx()
+            self.fx0, self.kappa = self._idealfx()
+
+        self.c_alpha = self.mf.fy(self.fz,0.01,self.gamma)/0.01
+        self.c_kappa = self.mf.fx(self.fz,0.05,self.gamma)/0.05
+        self._comstock()
+        self.f_vec = np.array([self.fx,self.fy,self.fz] )
 
     def _idealfx(self):
         def _minum_attempt(x):
@@ -72,11 +77,19 @@ class TireState:
             adj_fx = -self.dir*self.mf.fx(self.fz,x,self.gamma)
             return adj_fx
         def _root_attempt(x):
+            residual = self.fx_max - self.dir*self.mf.fx(self.fz,x,self.gamma)
+            return residual
+        kappa_max = minimize_scalar(_minum_attempt,bounds(0,1) if self.dir==1 else (-1,0)).x
+        fx_grip_max = self.mf.fx(self.fz,kappa_max,self.gamma)
 
+        if self.fx_max is not None and np.abs(fx_grip_max) >= np.abs(self.fx_max):
+            fx0 = self.fx_max
+            kappa = root_scalar(_root_attempt,x0=0)
+        else:
+            kappa = kappa_max
+            fx0 = fx_grip_max
+        return fx0, kappa
         
-        
-        return 0
-    
     def mf52(self):
         '''Deprecated function'''
         mf52 = MF52()

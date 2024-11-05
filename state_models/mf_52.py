@@ -41,10 +41,6 @@ class MF52:
         PVX1	=  self.Fx_params[13]  	
         PVX2	=  self.Fx_params[14]
         PEX1 = 0
-        # print(f'PEX1:{PEX1}')
-        # print(f'PEX2:{PEX2}')
-        # print(f'PEX3:{PEX3}')
-        # print(f'PEX4:{PEX4}')
         Fz0 = self.Fz0 * lambdaFz0 # Temp fix
 
         dfz = (Fz - Fz0) / Fz0
