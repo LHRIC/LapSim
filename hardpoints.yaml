@@ -1,0 +1,44 @@
+unit: mm
+steering_rack_delta: [39.5,100] # Maximum, number of points to generate
+front_shock_travel: [-20,20,100] # Minumum, maximum, number of points to generate
+rear_shock_travel: [-20,20,100] # Minumum, maximum, number of points to generate
+front_arb_exists: True
+rear_arb_exists: False
+front_left:
+  FLLO: [9.467, 571.194, 129.857] # Lower outboard
+  FLLIF: [105.000, 225.100, 127.000] # Lower inboard fore
+  FLLIA: [-97.935, 244.639, 137.349] # Lower inboard aft
+  FLUO: [6.448, 555.481, 301.938] # Upper outboard
+  FLUIF: [74.885, 271.488, 294.354] # Upper inboard fore
+  FLUIA: [-116.813, 274.845, 261.826] # Upper inboard aft
+  FLOT: [70.600, 582.000, 171.965] # Outboard tie
+  FLIT: [79.500, 220.980, 166.476] # Inboard tie
+  FLCP: [0.000, 610.000, 0.000] # Contact patch
+  FLWC: [0.000, 610.000, 203.200] # Wheel center
+  FLOP: [8.130, 539.539, 143.975] # Outboard push/pullrod
+  FLIP: [-12.465, 335.491, 385.469] # Inboard push/pullrod
+  FLBC: [-10.752, 219.514, 365.611] # Bellcrank pivot
+  FLSO: [-15.059, 341.494, 415.830] # Shock outboard
+  FLSI: [-26.500, 222.500, 550.000] # Shock inboard
+  FLABC: [-10.730, 279.879, 265.247] # ARB bellcrank pickup
+  FLALV: [-2.209, 279.879, 153.829] # ARB lever pickup
+  FLARB: [-47.046, 279.879, 150.000] # ARB lever anchor
+rear_left:
+  RLLO: [-1535.000, 597.620, 114.945] # Lower outboard
+  RLLIF: [-1250.620, 211.000, 105.000] # Lower inboard fore
+  RLLIA: [-1478.000, 211.000, 105.000] # Lower inboard aft
+  RLUO: [-1535.000, 578.736, 290.399] # Upper outboard
+  RLUIF: [-1240.000, 287.300, 230.200] # Upper inboard fore
+  RLUIA: [-1495.000, 287.006, 230.200] # Upper inboard aft
+  RLOT: [-1635.000, 595.000, 187.000] # Outboard tie
+  RLIT: [-1492.734, 267.312, 154.625] # Inboard tie
+  RLCP: [-1535.000, 610.000, 0.000] # Contact patch
+  RLWC: [-1535.000, 610.000, 203.200] # Wheel center
+  RLOP: [-1522.478, 556.566, 270.748] # Outboard push/pullrod
+  RLIP: [-1374.439, 246.131, 142.550] # Inboard push/pullrod
+  RLBC: [-1348.845, 200.416, 149.864] # Bellcrank pivot
+  RLSO: [-1397.002, 303.032, 197.613] # Shock outboard
+  RLSI: [-1375.176, 310.000, 374.132] # Shock inboard
+  RLABC: [] # ARB bellcrank pickup
+  RLALV: [] # ARB lever pickup
+  RLARB: [] # ARB lever anchor
