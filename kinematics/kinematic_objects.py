@@ -92,6 +92,7 @@ class CoordinateSystem:
         rot_obj = rot.from_matrix(delta_mat)
         euler_angles = rot_obj.as_euler('XYZ')
         return euler_angles
+
 class Rigid:
     def __init__(self, point1: Hardpoint, point2: Hardpoint, coordinate_system: CoordinateSystem):
         self.point1 = point1

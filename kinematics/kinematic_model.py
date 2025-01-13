@@ -2,6 +2,7 @@ import numpy as np
 from kinematic_objects import SuspensionCorner
 from kinematic_solver import kinematic_solver
 from read_yaml import read_yaml
+from scipy.interpolate import RegularGridInterpolator
 
 class KinematicModel:
     def __init__(self):
@@ -27,26 +28,26 @@ class KinematicModel:
         self.rear = self._generate_model(self.rear_left, None, self.rear_shock_travel)
     
     def _generate_model(self, corner: SuspensionCorner, steering_rack_delta, shock_travel):
-        l_mid = np.linalg.norm(corner.shock_inboard.pos - corner.shock_outboard.pos)
-        l_space = np.linspace(l_mid+shock_travel[0],l_mid+shock_travel[1],shock_travel[2])
-        steer_space = np.linspace(steering_rack_delta[0],-steering_rack_delta[0],steering_rack_delta[1]) if steering_rack_delta is not None else np.array([0])
-        shape = (len(steer_space),len(l_space))
-        shape3d = (len(steer_space),len(l_space),3)
+        shock_mid = np.linalg.norm(corner.shock_inboard.pos - corner.shock_outboard.pos)
+        self.shock_space = np.linspace(shock_mid+shock_travel[0],shock_mid+shock_travel[1],shock_travel[2])
+        self.steer_space = np.linspace(steering_rack_delta[0],-steering_rack_delta[0],steering_rack_delta[1]) if steering_rack_delta is not None else np.array([0])
+        shape = (len(self.steer_space),len(self.shock_space))
+        shape3d = (len(self.steer_space),len(self.shock_space),3)
 
         contact_patch_positions = np.empty(shape3d)
         shock_compression = np.empty(shape)
         steer_rack_positions = np.empty(shape3d)
         wheel_poses = np.empty(shape3d)
 
-        for i, steer in enumerate(steer_space):
+        for i, steer in enumerate(self.steer_space):
             corner.inboard_tie.translate(steer,[0,1,0])
-            for j, l in enumerate(l_space):
-                corner.linear.length = l
+            for j, shock in enumerate(self.shock_space):
+                corner.linear.length = shock
                 kinematic_solver(corner.dependent_objects, corner.residual_objects, corner.update_objects)
                 contact_patch_positions[i,j] = corner.contact_patch.pos
                 steer_rack_positions[i,j] = corner.inboard_tie.pos
                 shock_compression[i,j] = corner.shock.length()
-                wheel_poses[i,j] = np.rad2deg(corner.wheel_sys.delta_angle())
+                wheel_poses[i,j] = corner.wheel_sys.delta_angle()
 
         delta_cp_pos = np.empty((shape[0],shape[1],3))
         delta_cp_pos_norm = np.empty(shape)
@@ -56,11 +57,14 @@ class KinematicModel:
         relative_shock = np.empty(shape)
         relative_steer = np.empty(shape)
         z_pos = np.empty(shape)
-        surrogate_array = np.zeros((shape[0],shape[1],9))
+
+        ### UPDATE SHAPE IF ADDING VARIABLES ###
+        surrogate_array = np.zeros((shape[0],shape[1],11)) 
+        ### -------------------------------- ###
         
-        for i, steer in enumerate(steer_space):
-            for j, l in enumerate(l_space):
-                if j < len(l_space)-1:
+        for i, steer in enumerate(self.steer_space):
+            for j, shock in enumerate(self.shock_space):
+                if j < len(self.shock_space)-1:
                     delta_cp_pos[i,j] = contact_patch_positions[i,j] - contact_patch_positions[i,j+1]
                     delta_cp_pos_norm[i,j] = np.linalg.norm(delta_cp_pos[i,j])
                     delta_shock[i,j] = abs(shock_compression[i,j] - shock_compression[i,j+1])
@@ -72,7 +76,7 @@ class KinematicModel:
                 tangent_vec[i,j] = delta_cp_pos[i,j]/delta_cp_pos_norm[i,j]
 
                 motion_ratio[i,j] = delta_cp_pos_norm[i,j]/delta_shock[i,j] if delta_shock[i,j] !=0 else 0
-                relative_shock[i,j] = shock_compression[i,j] - l_mid
+                relative_shock[i,j] = shock_compression[i,j] - shock_mid
                 relative_steer[i,j] = steer_rack_positions[i,j,1] - corner.inboard_tie.initial_pos[1]
                 
                 surrogate_array[i,j] = [                # Index:
@@ -84,6 +88,13 @@ class KinematicModel:
                     contact_patch_positions[i,j,2],     # 5
                     tangent_vec[i,j,0],                 # 6
                     tangent_vec[i,j,1],                 # 7
-                    tangent_vec[i,j,2]                  # 8
+                    tangent_vec[i,j,2],                 # 8
+                    wheel_poses[i,j,0],                 # 9
+                    wheel_poses[i,j,2]                  # 10
                     ]
         return surrogate_array
+    
+    def interpolate(self, relative_shock, relative_steer, surrogate_array):
+        interp = RegularGridInterpolator((self.shock_space,self.steer_space),surrogate_array,bounds_error=True)
+
+        return
