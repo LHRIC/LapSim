@@ -1,4 +1,4 @@
-from kinematic_objects import *
+from kinematics.kinematic_objects import *
 import numpy as np
 import scipy.optimize as scipy
 

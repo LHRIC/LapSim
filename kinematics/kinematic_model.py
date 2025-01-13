@@ -1,7 +1,7 @@
 import numpy as np
-from kinematic_objects import SuspensionCorner
-from kinematic_solver import kinematic_solver
-from read_yaml import read_yaml
+from kinematics.kinematic_objects import SuspensionCorner
+from kinematics.kinematic_solver import kinematic_solver
+from utility.read_yaml import read_yaml
 from scipy.interpolate import RegularGridInterpolator
 
 class KinematicModel:
@@ -29,20 +29,20 @@ class KinematicModel:
     
     def _generate_model(self, corner: SuspensionCorner, steering_rack_delta, shock_travel):
         shock_mid = np.linalg.norm(corner.shock_inboard.pos - corner.shock_outboard.pos)
-        self.shock_space = np.linspace(shock_mid+shock_travel[0],shock_mid+shock_travel[1],shock_travel[2])
-        self.steer_space = np.linspace(steering_rack_delta[0],-steering_rack_delta[0],steering_rack_delta[1]) if steering_rack_delta is not None else np.array([0])
-        shape = (len(self.steer_space),len(self.shock_space))
-        shape3d = (len(self.steer_space),len(self.shock_space),3)
+        shock_space = np.linspace(shock_mid+shock_travel[0],shock_mid+shock_travel[1],shock_travel[2])
+        steer_space = np.linspace(-steering_rack_delta[0],steering_rack_delta[0],steering_rack_delta[1]) if steering_rack_delta is not None else np.array([0])
+        shape = (len(shock_space),len(steer_space))
+        shape3d = (len(shock_space),len(steer_space),3)
 
         contact_patch_positions = np.empty(shape3d)
         shock_compression = np.empty(shape)
         steer_rack_positions = np.empty(shape3d)
         wheel_poses = np.empty(shape3d)
 
-        for i, steer in enumerate(self.steer_space):
-            corner.inboard_tie.translate(steer,[0,1,0])
-            for j, shock in enumerate(self.shock_space):
-                corner.linear.length = shock
+        for i, shock in enumerate(shock_space):
+            corner.linear.length = shock
+            for j, steer in enumerate(steer_space):
+                corner.inboard_tie.translate(steer,[0,1,0])
                 kinematic_solver(corner.dependent_objects, corner.residual_objects, corner.update_objects)
                 contact_patch_positions[i,j] = corner.contact_patch.pos
                 steer_rack_positions[i,j] = corner.inboard_tie.pos
@@ -62,16 +62,16 @@ class KinematicModel:
         surrogate_array = np.zeros((shape[0],shape[1],11)) 
         ### -------------------------------- ###
         
-        for i, steer in enumerate(self.steer_space):
-            for j, shock in enumerate(self.shock_space):
-                if j < len(self.shock_space)-1:
-                    delta_cp_pos[i,j] = contact_patch_positions[i,j] - contact_patch_positions[i,j+1]
+        for i, shock in enumerate(shock_space):
+            for j, steer in enumerate(steer_space):
+                if i < len(shock_space)-1:
+                    delta_cp_pos[i,j] = contact_patch_positions[i,j] - contact_patch_positions[i+1,j]
                     delta_cp_pos_norm[i,j] = np.linalg.norm(delta_cp_pos[i,j])
-                    delta_shock[i,j] = abs(shock_compression[i,j] - shock_compression[i,j+1])
+                    delta_shock[i,j] = abs(shock_compression[i,j] - shock_compression[i+1,j])
                 else:
-                    delta_cp_pos[i,j] = delta_cp_pos[i,j-1]
-                    delta_cp_pos_norm[i,j] = delta_cp_pos_norm[i,j-1]
-                    delta_shock[i,j] = delta_shock[i,j-1]
+                    delta_cp_pos[i,j] = delta_cp_pos[i-1,j]
+                    delta_cp_pos_norm[i,j] = delta_cp_pos_norm[i-1,j]
+                    delta_shock[i,j] = delta_shock[i-1,j]
 
                 tangent_vec[i,j] = delta_cp_pos[i,j]/delta_cp_pos_norm[i,j]
 
@@ -95,6 +95,7 @@ class KinematicModel:
         return surrogate_array
     
     def interpolate(self, relative_shock, relative_steer, surrogate_array):
-        interp = RegularGridInterpolator((self.shock_space,self.steer_space),surrogate_array,bounds_error=True)
-
-        return
+        shock_space = surrogate_array[:,0,0]
+        steer_space = (surrogate_array[0,:,1]).T
+        interp = RegularGridInterpolator((shock_space,steer_space),surrogate_array,fill_value=np.nan)
+        return interp(np.array([relative_shock,relative_steer]))

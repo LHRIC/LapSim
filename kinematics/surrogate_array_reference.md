@@ -1,7 +1,7 @@
 # Surrogate Array Quick-Reference
 Shape: (n,m,9) \
-Shape[0] = Steer intervals \
-Shape[1] = Jounce intervals \
+Shape[0] = Jounce intervals \
+Shape[1] = Steer intervals \
 Shape[2] = No. of variables
 ## Variables:
 | Index | Description | Unit |
