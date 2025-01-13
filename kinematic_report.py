@@ -8,23 +8,22 @@ test_kin_model.from_hardpoints('hardpoints.yaml')
 f = test_kin_model.front
 r = test_kin_model.rear
 
-ax = plt.figure().add_subplot(projection="3d")
-ax.plot_surface(f[:,:,3],f[:,:,4],f[:,:,5])
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
-# ax.set_aspect('equal', adjustable='box')
-for i in range(np.shape(f)[0]):
-    ax.plot(f[i,:,3],f[i,:,4],f[i,:,5],color="black")
+fig = plt.figure()
+fig.suptitle('Contact Patch Configuration Spaces')
+fig.subplots_adjust(left=0.1, bottom=None, right=0.9, top=None, wspace=0.1, hspace=None)
+ax1 = fig.add_subplot(121,projection="3d")
+ax1.plot_surface(f[:,:,3],f[:,:,4],f[:,:,5])
+ax1.set_xlabel('x')
+ax1.set_ylabel('y')
+ax1.set_zlabel('z')
+ax1.set_title('Front')
 
-plt.show()
-
-bx = plt.figure().add_subplot(projection="3d")
-bx.plot(r[0,:,3],r[0,:,4],r[0,:,5])
-bx.set_xlabel('x')
-bx.set_ylabel('y')
-bx.set_zlabel('z')
-# bx.set_aspect('equal', adjustable='box')
+ax2 = fig.add_subplot(122,projection="3d")
+ax2.plot(r[:,0,3],r[:,0,4],r[:,0,5])
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.set_zlabel('z')
+ax2.set_title('Rear')
 
 plt.show()
 
