@@ -1,5 +1,3 @@
-import yaml
-import pint
 import string
 
 def parse_tir(filepath):
