@@ -41,8 +41,6 @@ class StateVector14:
         self.w_rl_dt = self.state[26]
         self.w_rr_dt = self.state[27]
 
-
-
     def pack (self):
         self.state = np.array([
             self.x,

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 test_kin_model = KinematicModel()
-test_kin_model.from_hardpoints('hardpoints.yaml')
+test_kin_model.from_hardpoints('parameters/hardpoints.yaml')
 f = test_kin_model.front
 r = test_kin_model.rear
 
@@ -27,17 +27,20 @@ ax2.set_title('Rear')
 
 plt.show()
 
-import csv
-fil_name = 'front_kin_surrogate.csv'
-data = test_kin_model.front
-data = data.tolist()
-with open(fil_name, 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
-    writer.writerows(data)
+np.save('front_kin_surrogate', test_kin_model.front)
+np.save('rear_kin_surrogate', test_kin_model.rear)
 
-fil_name = 'rear_kin_surrogate.csv'
-data = test_kin_model.rear
-data = data.tolist()
-with open(fil_name, 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
-    writer.writerows(data)
+# import csv
+# fil_name = 'front_kin_surrogate.csv'
+# data = test_kin_model.front
+# data = data.tolist()
+# with open(fil_name, 'w', newline='') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
+#     writer.writerows(data)
+
+# fil_name = 'rear_kin_surrogate.csv'
+# data = test_kin_model.rear
+# data = data.tolist()
+# with open(fil_name, 'w', newline='') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
+#     writer.writerows(data)
