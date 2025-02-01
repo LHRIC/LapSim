@@ -1,4 +1,4 @@
-# Surrogate Array Quick-Reference
+# State Vector Quick-Reference
 ## Variables:
 | Index | Description | Unit |
 | ---   | ---         | ---  |

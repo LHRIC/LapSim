@@ -3,7 +3,7 @@ class ShockModel:
         self.k = k
         self.b = b
         return
-    def absolute(self,x, v):
+    def force_absolute(self, x, v):
         force_abs = 0
         force_abs += self.force_damper(v)
         force_abs += self.force_spring(x)

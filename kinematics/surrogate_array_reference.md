@@ -1,5 +1,5 @@
 # Surrogate Array Quick-Reference
-Shape: (n,m,9) \
+Shape: (n,m,11) \
 Shape[0] = Jounce intervals \
 Shape[1] = Steer intervals \
 Shape[2] = No. of variables

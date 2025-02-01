@@ -2,9 +2,6 @@ from kinematics.kinematic_objects import *
 import numpy as np
 import scipy.optimize as scipy
 
-tracker = []
-
-
 def kinematic_solver(dependent_objects: Hardpoint, residual_objects: Linkage | ControlledPoint, update_objects):
     initial_positions = np.array([obj.pos for obj in dependent_objects])
     positions_shape = np.shape(initial_positions)
