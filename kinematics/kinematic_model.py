@@ -75,7 +75,7 @@ class KinematicModel:
 
                 tangent_vec[i,j] = delta_cp_pos[i,j]/delta_cp_pos_norm[i,j]
 
-                motion_ratio[i,j] = delta_cp_pos_norm[i,j]/delta_shock[i,j] if delta_shock[i,j] !=0 else 0
+                motion_ratio[i,j] = delta_shock[i,j]/delta_cp_pos_norm[i,j] if delta_shock[i,j] !=0 else 0
                 relative_shock[i,j] = shock_compression[i,j] - shock_mid
                 relative_steer[i,j] = steer_rack_positions[i,j,1] - corner.inboard_tie.initial_pos[1]
                 

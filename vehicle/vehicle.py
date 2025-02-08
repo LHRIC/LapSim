@@ -32,7 +32,8 @@ class Vehicle:
                 shock = self.front_shock
             else:
                 shock = self.rear_shock
-            force = shock.force_absolute(z_xx, z_xx_dt)
+            force_shock = shock.force_absolute(z_xx, z_xx_dt)
+            force_uns = force_shock/motion_ratio
 
 
 
