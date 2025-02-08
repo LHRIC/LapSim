@@ -34,6 +34,7 @@ class Vehicle:
                 shock = self.rear_shock
             force_shock = shock.force_absolute(z_xx, z_xx_dt)
             force_uns = force_shock/motion_ratio
+            force_tire = 0
 
 
 
