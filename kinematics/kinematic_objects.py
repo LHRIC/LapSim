@@ -28,7 +28,6 @@ class Spring:
         self.point2 = point2
     def length(self):
         return np.linalg.norm(self.point1.pos - self.point2.pos)
-
     def force(self) -> float:
         dynamic_length = np.linalg.norm(self.point1-self.point2)
         length_delta = self.static_length - dynamic_length

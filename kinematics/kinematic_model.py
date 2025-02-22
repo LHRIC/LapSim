@@ -57,7 +57,7 @@ class KinematicModel:
         relative_shock = np.empty(shape)
         relative_steer = np.empty(shape)
         z_pos = np.empty(shape)
-
+        
         ### UPDATE SHAPE IF ADDING VARIABLES ###
         surrogate_array = np.zeros((shape[0],shape[1],11)) 
         ### -------------------------------- ###
@@ -75,7 +75,7 @@ class KinematicModel:
 
                 tangent_vec[i,j] = delta_cp_pos[i,j]/delta_cp_pos_norm[i,j]
 
-                motion_ratio[i,j] = delta_shock[i,j]/delta_cp_pos_norm[i,j] if delta_shock[i,j] !=0 else 0
+                motion_ratio[i,j] = delta_shock[i,j]/delta_cp_pos_norm[i,j] if delta_cp_pos_norm[i,j] !=0 else 0
                 relative_shock[i,j] = shock_compression[i,j] - shock_mid
                 relative_steer[i,j] = steer_rack_positions[i,j,1] - corner.inboard_tie.initial_pos[1]
                 
@@ -98,4 +98,6 @@ class KinematicModel:
         shock_space = surrogate_array[:,0,0]
         steer_space = (surrogate_array[0,:,1]).T
         interp = RegularGridInterpolator((shock_space,steer_space),surrogate_array,fill_value=np.nan)
-        return interp(np.array([relative_shock,relative_steer]))
+        # interp returns an array as it takes in an array of values to interpolate at so we take... 
+        # ...the first element b/c we only interpolate at one point
+        return interp(np.array([relative_shock,relative_steer]))[0] 
