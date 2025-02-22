@@ -89,7 +89,7 @@ class CoordinateSystem:
     def delta_angle(self):
         delta_mat = np.linalg.inv(self.initial_matrix) @ self.matrix
         rot_obj = rot.from_matrix(delta_mat)
-        euler_angles = rot_obj.as_euler('XYZ')
+        euler_angles = rot_obj.as_euler('xyz')
         return euler_angles
 
 class Rigid:

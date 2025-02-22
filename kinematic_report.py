@@ -1,46 +1,54 @@
 from kinematics.kinematic_model import KinematicModel
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+import matplotlib.ticker as FuncFormatter
 import numpy as np
-import pandas as pd
 
 test_kin_model = KinematicModel()
 test_kin_model.from_hardpoints('parameters/hardpoints.yaml')
 f = test_kin_model.front
 r = test_kin_model.rear
 
-fig = plt.figure()
-fig.suptitle('Contact Patch Configuration Spaces')
-fig.subplots_adjust(left=0.1, bottom=None, right=0.9, top=None, wspace=0.1, hspace=None)
-ax1 = fig.add_subplot(121,projection="3d")
-ax1.plot_surface(f[:,:,3],f[:,:,4],f[:,:,5])
-ax1.set_xlabel('x')
-ax1.set_ylabel('y')
-ax1.set_zlabel('z')
-ax1.set_title('Front')
+fig = plt.figure(figsize=(16,6))
+fig.suptitle('Front Camber Gain')
+fig.tight_layout()
 
-ax2 = fig.add_subplot(122,projection="3d")
-ax2.plot(r[:,0,3],r[:,0,4],r[:,0,5])
-ax2.set_xlabel('x')
-ax2.set_ylabel('y')
-ax2.set_zlabel('z')
-ax2.set_title('Rear')
+n = len(f[0,:,0])
+colormap = plt.cm.managua
+colors = [colormap(i) for i in np.linspace(1, 0, n)]
+norm = mpl.colors.Normalize(vmin=-1,vmax=1)
+scalar_mappable = plt.cm.ScalarMappable(cmap=plt.cm.managua,norm=norm)
+
+ax1 = fig.add_subplot(121)
+
+for i in range(n):
+    ax1.plot(f[:,i,0], np.rad2deg(f[:,i,9]))
+
+for i, line in enumerate(ax1.lines):
+    line.set_color(colors[i])
+
+ax1.set_xlabel('Shock Compression/Rebound (mm)')
+ax1.set_ylabel('Angle (deg)')
+ax1.set_title('Camber Gain')
+
+n = len(f[:,0,0])
+colormap = plt.cm.managua
+colors = [colormap(i) for i in np.linspace(1, 0, n)]
+norm = mpl.colors.Normalize(vmin=-1,vmax=1)
+scalar_mappable = plt.cm.ScalarMappable(cmap=plt.cm.managua,norm=norm)
+
+ax2 = fig.add_subplot(122)
+for i in range(n):
+    ax2.plot(f[i,:,1], np.rad2deg(f[i,:,9]))
+
+for i, line in enumerate(ax2.lines):
+    line.set_color(colors[i])
+
+ax2.set_xlabel('Steering Rack Displacement (mm)')
+ax2.set_ylabel('Angle (deg)')
+ax2.set_title('Steer Camber')
+
+cbar = plt.colorbar(scalar_mappable,ax=ax1,label='Fractional Steer')
+cbar = plt.colorbar(scalar_mappable,ax=ax2,label='Fractional Bump')
 
 plt.show()
-
-np.save('front_kin_surrogate', test_kin_model.front)
-np.save('rear_kin_surrogate', test_kin_model.rear)
-
-# import csv
-# fil_name = 'front_kin_surrogate.csv'
-# data = test_kin_model.front
-# data = data.tolist()
-# with open(fil_name, 'w', newline='') as csvfile:
-#     writer = csv.writer(csvfile, delimiter=',')
-#     writer.writerows(data)
-
-# fil_name = 'rear_kin_surrogate.csv'
-# data = test_kin_model.rear
-# data = data.tolist()
-# with open(fil_name, 'w', newline='') as csvfile:
-#     writer = csv.writer(csvfile, delimiter=',')
-#     writer.writerows(data)
