@@ -28,21 +28,25 @@ class Vehicle:
         vehicle_pitch = self.state_vector.pitch
         rotation_obj = rot.from_euler('xy',[vehicle_roll, vehicle_pitch])
         rotation_matrix = rotation_obj.as_matrix()
+        mirror_matrix = [[1,0,0],[0,-1,0],[0,0,1]]
 
         for i, wheel in enumerate(['fl','fr','rl','rr']):
             z_xx = eval("self.state_vector.z_" + wheel)
             z_xx_dt = eval("self.state_vector.z_" + wheel + "_dt")
             w_xx_dt = eval("self.state_vector.w_" + wheel + "_dt")
-            if wheel == 'fl' or 'fr':
+
+            if wheel == 'fl' or wheel == 'fr':
                 surrogate = self.kinematic_model.front
             else:
                 surrogate = self.kinematic_model.rear
+
             kin_vec = self.kinematic_model.interpolate(z_xx, self.control_vector.steer, surrogate)
             motion_ratio = kin_vec[2]
             tangent_vec = kin_vec[6:8]
             wheel_pose = kin_vec[9:11]
-            cp_pos = kin_vec[3:6]
+            cp_pos = mirror_matrix @ kin_vec[3:6] if wheel == 'fr' or wheel == 'rr' else kin_vec[3:6]
             wheel_pose_matrix = rot.from_euler('xz', wheel_pose).as_matrix()
+            
             if wheel == "fl" or "fr":
                 shock = self.front_shock
             else:
@@ -50,7 +54,8 @@ class Vehicle:
             force_shock = shock.force_absolute(z_xx, z_xx_dt)
             force_uns = force_shock/motion_ratio
             cp_pos_abs = rotation_matrix @ cp_pos + [0, 0, vehicle_z]
-            # print(rotation_matrix, cp_pos)
             wheel_pose_abs = rotation_matrix @ wheel_pose_matrix
             force_tire = self.tire_model.fxyz(wheel_pose, w_xx_dt, cp_pos)
+            # print(rotation_matrix)
+            print(wheel, cp_pos_abs)
         return
