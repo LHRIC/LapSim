@@ -29,6 +29,7 @@ class KinematicModel:
     
     def _generate_model(self, corner: SuspensionCorner, steering_rack_delta, shock_travel):
         shock_mid = np.linalg.norm(corner.shock_inboard.pos - corner.shock_outboard.pos)
+        # this is the given [-20, 20, 51] need to generate 51 points from that 
         shock_space = np.linspace(shock_mid+shock_travel[0],shock_mid+shock_travel[1],shock_travel[2])
         steer_space = np.linspace(-steering_rack_delta[0],steering_rack_delta[0],steering_rack_delta[1]) if steering_rack_delta is not None else np.array([0])
         shape = (len(shock_space),len(steer_space))
@@ -65,6 +66,7 @@ class KinematicModel:
         for i, shock in enumerate(shock_space):
             for j, steer in enumerate(steer_space):
                 if i < len(shock_space)-1:
+                    #change in contact patch position 
                     delta_cp_pos[i,j] = contact_patch_positions[i,j] - contact_patch_positions[i+1,j]
                     delta_cp_pos_norm[i,j] = np.linalg.norm(delta_cp_pos[i,j])
                     delta_shock[i,j] = abs(shock_compression[i,j] - shock_compression[i+1,j])
@@ -86,10 +88,10 @@ class KinematicModel:
                     contact_patch_positions[i,j,0],     # 3
                     contact_patch_positions[i,j,1],     # 4
                     contact_patch_positions[i,j,2],     # 5
-                    tangent_vec[i,j,0],                 # 6
-                    tangent_vec[i,j,1],                 # 7
-                    tangent_vec[i,j,2],                 # 8
-                    wheel_poses[i,j,0],                 # 9
+                    tangent_vec[i,j,0],                 # 6 0
+                    tangent_vec[i,j,1],                 # 7 0
+                    tangent_vec[i,j,2],                 # 8 1
+                    wheel_poses[i,j,0],                 # 9 
                     wheel_poses[i,j,2]                  # 10
                     ]
         return surrogate_array
