@@ -18,16 +18,18 @@ class KinematicModel:
         self.nonlin_motional_ratio_rear = params["nonlin_motional_ratio_rear"] 
         self.front_camber = params["front_camber_gain"] 
         self.rear_camber = params["rear_camber_gain"] 
-        self.bump_steer_front = params["bump_steer_front"]
-        self.bump_steer_rear = params["bump_steer_rear"] 
+        self.bump_steer_front = np.deg2rad(params["bump_steer_front"])
+        self.bump_steer_rear = np.deg2rad(params["bump_steer_rear"])
         self.wheelbase = params["wheelbase"]
-        self.steer_rate = params["steer_rate"]
-        self.ackermann = params["ackermann"]
+        self.steer_rate = np.deg2rad(params["steer_rate"])
+        self.ackermann = np.deg2rad(params["ackermann"])
+
         self.front = self._generate_model(self.front_shock_travel, self.steering_rack_delta, 
                                           self.front_camber, self.bump_steer_front, 
                                           self.trackwidth_front, self.motion_ratio_front,
                                           self.nonlin_motional_ratio_front)
-        self.rear = self._generate_model(self.rear_shock_travel, self.steering_rack_delta, 
+        
+        self.rear = self._generate_model(self.rear_shock_travel, None, 
                                          self.rear_camber, self.bump_steer_rear,
                                          self.trackwidth_rear, self.motion_ratio_rear, 
                                          self.nonlin_motional_ratio_rear)
@@ -58,7 +60,7 @@ class KinematicModel:
         camber = np.empty(shape)
         toe = np.empty(shape)
 
-        surrogate_array = np.zeros((len(shock_space), len(steer_space), 11)) 
+        surrogate_array = np.zeros((len(shock_space), len(steer_space), 11))
 
         shock_length = abs(shock[0] - shock[1])
         num_steps = shock[2]
@@ -89,7 +91,7 @@ class KinematicModel:
                 if j < len(steer_space)-1:
                     relative_steer[i, j] = abs(steer_space[j] - steer_space[j+1])
                 else:
-                    print("else")
+                    # print("else")
                     relative_steer[i, j] = abs(steer_space[j] - steer_space[j-1])
                     
                 motion_ratio[i, j] = motion_ratio_num + (nonlin_motion_ratio * shock_space[i])
@@ -107,11 +109,11 @@ class KinematicModel:
                     tangent_vec[i,j,0],                 # 6 0
                     tangent_vec[i,j,1],                 # 7 0
                     tangent_vec[i,j,2],                 # 8 1
-                    camber[i,0],                 # 9 
-                    toe[j,2]                  # 10
+                    camber[i, j],                 # 9 
+                    toe[i, j]                  # 10
                     ]
                 
-        print(surrogate_array)
+        # print(surrogate_array)
         return surrogate_array
     
     def interpolate(self, relative_shock, relative_steer, surrogate_array):
