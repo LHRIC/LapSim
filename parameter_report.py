@@ -6,7 +6,7 @@ import pandas as pd
 test_kin_model = KinematicModel()
 test_kin_model.from_parameters('parameters.yaml')
 f = test_kin_model.front
-# r = test_kin_model.rear
+r = test_kin_model.rear
 
 fig = plt.figure()
 fig.suptitle('Contact Patch Configuration Spaces')

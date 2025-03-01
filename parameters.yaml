@@ -5,18 +5,18 @@ rear_shock_travel: [-20,20,51] # Minumum, maximum, number of points to generate
 front_camber_gain: [0.025] # Radians / milimeter
 rear_camber_gain: [0.025] # Radians / milimeter
 bump_steer_front: 0.0025 #degrees
-bump_steer_back: 0.0025
+bump_steer_rear: 0.0025
 
 ackerman_type: True # True = deg/deg False = deg/mm
 # Parameters 
 trackwidth_front: 1200 # y-axis distance between contact patch positions (mm)
-trackwidth_back: 1200
+trackwidth_rear: 1200
 wheelbase: 1500 # x-axis distance between contact patch positions (mm)
 motion_ratio_front: 2 # Rate at which the shock displaces relative to the contact patch (unitless/ mm/mm)
-motion_ratio_back: 2
+motion_ratio_rear: 2
 steer_rate: 1 # Rate at which the wheel rotates compared to the steering rack displacement (deg/mm)
 nonlin_motional_ratio_front: 0.01 #Rate at which the motion ratio deviates from it's constant values relative to wheel displacement (/mm)
-nonlin_motional_ratio_back: 0.01
+nonlin_motional_ratio_rear: 0.01
 ackermann: 1 # Rate at which the outside wheel deviates from the inner wheel per degree of rotation OR relative to steering rack (deg/deg OR deg/mm)
 percent_anti_geo: 0
 
