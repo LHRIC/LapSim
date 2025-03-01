@@ -2,3 +2,4 @@ front_shock_stiffness: 40000
 front_shock_damping: 0.23529411764
 rear_shock_stiffness: 40000
 rear_shock_damping: 0.23529411764
+vehicle_mass: 269.887

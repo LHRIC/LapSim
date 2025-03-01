@@ -4,10 +4,9 @@ class ShockModel:
         self.b = b
         return
     def force_absolute(self, x, v):
-        force_abs = 0
-        force_abs += self.force_damper(v)
-        force_abs += self.force_spring(x)
-        return force_abs
+        f_d = self.force_damper(v)
+        f_x = self.force_spring(x)
+        return f_d + f_x
     def force_damper(self, v):
         #TODO add damper curves and stuff
         force_abs = self.b*v

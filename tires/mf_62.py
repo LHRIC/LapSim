@@ -9,7 +9,7 @@ Tire and Vehicle Dynamics, Third edition, Hans B. Pacejka
 Chapter 4.3.2
 '''
 
-    def __init__(self,params):
+    def __init__(self, params: dict):
         self.params = params  # Tire parameters from .tir file
         self.fz0 = 800          # Nominal wheel load -> (4.E2a)
 

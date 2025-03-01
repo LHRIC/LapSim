@@ -94,7 +94,7 @@ class KinematicModel:
                     ]
         return surrogate_array
     
-    def interpolate(self, relative_shock, relative_steer, surrogate_array):
+    def interpolate(self, relative_shock, relative_steer, surrogate_array) -> np.ndarray:
         shock_space = surrogate_array[:,0,0]
         steer_space = (surrogate_array[0,:,1]).T
         interp = RegularGridInterpolator((shock_space,steer_space),surrogate_array,fill_value=np.nan)
