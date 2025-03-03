@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from solver.solver import RK4
+from solver.rk4 import RK4
 
 def cosine_test():
     def fun(t, x):

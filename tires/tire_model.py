@@ -1,5 +1,5 @@
 import numpy as np
-from mf_62 import MF61
+from tires.mf_61 import MF61
 
 
 class TireModel:
