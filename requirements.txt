@@ -1,6 +1,6 @@
 pyyaml==6.0.2
 pint==0.21.1
-scipy==1.14.0
+scipy==1.10.1
 matplotlib==3.9.2
 pandas==1.4.3
 svgpathtools==1.6.1
