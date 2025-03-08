@@ -2,13 +2,10 @@ name: Python application
 
 on:
   push:
-    branches: [ na/lapsimv2-unittest ]
   pull_request:
-    branches: [ na/lapsimv2-unittest ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
