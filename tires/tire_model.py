@@ -6,15 +6,19 @@ class TireModel:
     def __init__(self):
         # Add .tir file parse
         self.Cfz = 200000
-        self.MF = MF61(self.params)
+        # self.MF = MF61(self.params)
         return
     
     def fxyz(self, tire_displacement, slip_angle, slip_ratio, inclination_angle):
-        fz = self._normal_load(self, tire_displacement)
+        fz = self._normal_load(tire_displacement)
         fx0 = self.MF.fx(fz, slip_ratio, inclination_angle)
         fy0 = self.MF.fy(fz, slip_angle, inclination_angle)
         fx, fy = self._comstock(fx0, fy0, slip_angle, slip_ratio)
         return np.array([fx, fy, fz])
+    
+    def fz(self, tire_displacement, slip_angle, slip_ratio, inclination_angle):
+        fz = self._normal_load(tire_displacement)
+        return np.array([0, 0, fz])
     
     def _normal_load(self, tire_displacement):
         fz = self.Cfz * tire_displacement

@@ -1,7 +1,9 @@
+import numpy as np
 class ShockModel:
-    def __init__(self,k,b):
+    def __init__(self, k, b, x0):
         self.k = k
         self.b = b
+        self.x0 = x0
         return
     def force_absolute(self, x, v):
         f_d = self.force_damper(v)
@@ -12,5 +14,5 @@ class ShockModel:
         force_abs = self.b*v
         return force_abs
     def force_spring(self, x):
-        force_abs = self.k*x
+        force_abs = np.clip(self.k*(x + self.x0), a_min=0, a_max=None)
         return force_abs

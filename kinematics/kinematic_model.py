@@ -97,7 +97,7 @@ class KinematicModel:
     def interpolate(self, relative_shock, relative_steer, surrogate_array) -> np.ndarray:
         shock_space = surrogate_array[:,0,0]
         steer_space = (surrogate_array[0,:,1]).T
-        interp = RegularGridInterpolator((shock_space,steer_space),surrogate_array,fill_value=np.nan)
+        interp = RegularGridInterpolator((shock_space, steer_space), surrogate_array, bounds_error=False, fill_value=None)
         # interp returns an array as it takes in an array of values to interpolate at so we take... 
         # ...the first element b/c we only interpolate at one point
-        return interp(np.array([relative_shock,relative_steer]))[0] 
+        return interp(np.array([relative_shock, relative_steer]))[0] 

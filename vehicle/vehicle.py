@@ -15,11 +15,13 @@ class Vehicle:
         self.control_vector = ControlVector(u0)
         self.kinematic_model = KinematicModel()
         self.kinematic_model.from_hardpoints('parameters/hardpoints.yaml')
-        self.front_shock = ShockModel(params['front_shock_stiffness'], params['front_shock_damping'])
-        self.rear_shock = ShockModel(params['rear_shock_stiffness'], params['rear_shock_damping'])
+        self.front_shock = ShockModel(params['front_shock_stiffness'], params['front_shock_damping'], params['front_shock_ride_compression'])
+        self.rear_shock = ShockModel(params['rear_shock_stiffness'], params['rear_shock_damping'], params['rear_shock_ride_compression'])
         self.tire_model = TireModel()
-        vehicle_mass = params['vehicle_mass']
+        self.vehicle_mass = params['vehicle_mass']
+        self.vehicle_inertia = params['vehicle_inertia']
         self.radius = 0.406 # Pull from params
+        self.x_dot = np.zeros(len(x0))
         return
     
     def _slip_angle(self, wheel_pose_abs, local_wheel_vel):
@@ -41,7 +43,6 @@ class Vehicle:
     def evaluate(self):
         self.state_vector.unpack()
         self.control_vector.unpack()
-        vehicle_xy_vel = [self.state_vector.x_dt, self.state_vector.y_dt]
         vehicle_z = self.state_vector.z
         vehicle_roll = self.state_vector.roll
         vehicle_pitch = self.state_vector.pitch
@@ -57,7 +58,7 @@ class Vehicle:
             z_xx = eval("self.state_vector.z_" + wheel)
             z_xx_dt = eval("self.state_vector.z_" + wheel + "_dt")
             w_xx_dt = eval("self.state_vector.w_" + wheel + "_dt")
-            xx_mass = 10 ####### TODO
+            xx_mass = 7 ####### TODO
 
             if wheel == 'fl' or wheel == 'fr':
                 surrogate = self.kinematic_model.front
@@ -66,37 +67,51 @@ class Vehicle:
 
             kin_vec = self.kinematic_model.interpolate(z_xx, self.control_vector.steer, surrogate)
             motion_ratio = kin_vec[2]
-            tangent_vec = kin_vec[6:8]
+            tangent_vec = mirror_matrix @ kin_vec[6:9] if wheel == 'fr' or wheel == 'rr' else kin_vec[6:9]
             wheel_pose = kin_vec[9:11]
             cp_pos = mirror_matrix @ kin_vec[3:6] if wheel == 'fr' or wheel == 'rr' else kin_vec[3:6]
             wheel_pose_matrix = rot.from_euler('xz', wheel_pose).as_matrix()
+            wheel_pose_matrix = wheel_pose_matrix @ mirror_matrix if wheel == 'fr' or wheel == 'rr' else wheel_pose_matrix
             
-            if wheel == "fl" or "fr":
+            if wheel == 'fl' or wheel == 'fr':
                 shock = self.front_shock
             else:
                 shock = self.rear_shock
     
-            force_uns_shock = force_shock/motion_ratio
             cp_pos_abs = rotation_matrix @ cp_pos + [0, 0, vehicle_z]
             wheel_pose_abs = rotation_matrix @ wheel_pose_matrix
             wheel_pose_abs_euler = rot.from_matrix(wheel_pose_matrix).as_euler('xyz')
             force_shock = shock.force_absolute(z_xx, z_xx_dt)
+            force_uns_shock = force_shock/motion_ratio
             tire_displacement = -np.clip(cp_pos_abs[2], None, 0)
-            yaw_rate_matrix = rot.from_euler('z', vehicle_yaw_dt).as_matrix() #### #TODO DOES THIS MAKE SENSE??
-            local_wheel_vel = yaw_rate_matrix @ cp_pos_abs + [self.state_vector.x_dt, self.state_vector.y_dt, 0]
+            yaw_rate_vec = np.array([0, 0, vehicle_yaw_dt])
+            local_wheel_vel = np.cross(cp_pos_abs, yaw_rate_vec) + [self.state_vector.x_dt, self.state_vector.y_dt, 0]
             slip_angle = self._slip_angle(wheel_pose_abs, local_wheel_vel)
             slip_ratio = self._slip_ratio(wheel_pose_abs, local_wheel_vel, w_xx_dt)
             inclination_angle = wheel_pose_abs_euler[1]
-            force_tire = self.tire_model.fxyz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
+
+            # force_tire = self.tire_model.fxyz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
+            force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
+
             force_tire_tangent = np.dot(force_tire, tangent_vec)
-            force_tire_compliment = force_tire = force_tire_tangent
+            force_tire_compliment = force_tire - force_tire_tangent
             force_uns = force_tire_tangent - force_uns_shock
             z_ddt_vec[i] = force_uns/xx_mass
             corner_forces[i] = force_tire_compliment + force_uns_shock*tangent_vec
             corner_torques[i] = np.cross(cp_pos_abs, corner_forces[i])
-                    
-            
         # End of outboard component analysis
-        
 
-        return
+        gravity_force = self.vehicle_mass * np.array([0,0,-9.81])
+        # CG POSITION APPLIES TORQUE RAHH
+        sum_forces = corner_forces.sum(axis=0) + gravity_force
+        sum_torques = corner_torques.sum(axis=0)
+        accel_vec =  sum_forces/self.vehicle_mass
+        rot_accel_vec = np.linalg.pinv(self.vehicle_inertia) @ sum_torques
+        w_ddt_vec = np.zeros(4) #TODO
+
+        self.x_dot[0:14] = self.state_vector.state[14:28]
+        self.x_dot[14:17] = accel_vec
+        self.x_dot[17:20] = rot_accel_vec
+        self.x_dot[20:24] = z_ddt_vec
+        self.x_dot[24:28] = w_ddt_vec
+        return self.x_dot

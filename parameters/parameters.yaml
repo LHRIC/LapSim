@@ -1,5 +1,10 @@
-front_shock_stiffness: 40000
+front_shock_stiffness: 40
 front_shock_damping: 0.23529411764
-rear_shock_stiffness: 40000
+front_shock_ride_compression: 20.47
+# front_shock_ride_compression: 0
+rear_shock_stiffness: 40
 rear_shock_damping: 0.23529411764
+rear_shock_ride_compression: 21.00
+# rear_shock_ride_compression: 0
 vehicle_mass: 269.887
+vehicle_inertia: [[1,1,1],[1,1,1],[1,1,132.29]]

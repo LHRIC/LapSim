@@ -30,8 +30,8 @@ class SteadyStateSolver:
                 x0_mod.append(x0[i])
             i += 1
         x0_mod = np.array(x0_mod)        
-        sol = root(self._fun_explicit, x0_mod)
-        return sol.x
+        sol = root(self._fun_implicit, x0_mod)
+        return sol
     
     def _fun_implicit(self, x):
         i, j = 0, 0
