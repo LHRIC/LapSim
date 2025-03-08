@@ -2,11 +2,9 @@ name: Python application
 
 on:
   push:
-    branches:
-      - '*'
+    branches: [ na/lapsimv2-unittest ]
   pull_request:
-    branches:
-      - '*'
+    branches: [ na/lapsimv2-unittest ]
 
 jobs:
   build:
