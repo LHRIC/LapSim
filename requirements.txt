@@ -1,5 +1,4 @@
 pyyaml==6.0.2
-numpy==2.1.2
 pint==0.24.3
 scipy==1.14.1
 pandas==2.2.3
