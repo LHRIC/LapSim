@@ -1,8 +1,9 @@
-import unittest
+import unittest #Step 1: import unnitest, you do not need to install anything
 from unittest.mock import patch, MagicMock
 import numpy as np
 from kinematics.kinematic_model import KinematicModel
 
+#you need to initialize unnitTest class
 class TestKinematicModel(unittest.TestCase):
     def setUp(self):
         self.model = KinematicModel()
@@ -54,7 +55,9 @@ class TestKinematicModel(unittest.TestCase):
                 'RLARB': [-1370.000, 280.000, 150.000]
             }
         }
-
+    # Step 2: Write a test function 
+    # The patch() decorator / context manager makes it easy to mock classes or objects in a module under test. 
+    # The object you specify will be replaced with a mock (or other object) during the test and restored when the test ends
     @patch('kinematics.kinematic_model.read_yaml')
     def test_from_hardpoints(self, mock_read_yaml):
         mock_read_yaml.return_value = self.mock_hardpoints
@@ -84,7 +87,7 @@ class TestKinematicModel(unittest.TestCase):
         mock_corner.dependent_objects = []
         mock_corner.residual_objects = []
         mock_corner.update_objects = []
-        mock_linear = MagicMock()
+        mock_linear = MagicMock() #used for classes with mock() properties 
         mock_corner.linear = mock_linear
         steering_rack_delta = [10, 3]  # 10mm of travel, 3 points
         shock_travel = [-5, 5, 3]     # -5 to 5mm travel, 3 points
@@ -112,7 +115,6 @@ class TestKinematicModel(unittest.TestCase):
 
     @patch('kinematics.kinematic_model.read_yaml')
     def test_front_rear_models_different(self, mock_read_yaml):
-        """Test that front and rear models are generated differently due to steering differences"""
         mock_read_yaml.return_value = self.mock_hardpoints
         with patch.object(KinematicModel, '_generate_model') as mock_gen:
             mock_gen.side_effect = [
@@ -131,7 +133,6 @@ class TestKinematicModel(unittest.TestCase):
 
     @patch('kinematics.kinematic_model.read_yaml')
     def test_shock_length_calculation(self, mock_read_yaml):
-        """Test that shock lengths are calculated correctly"""
         mock_read_yaml.return_value = self.mock_hardpoints
         with patch('kinematics.kinematic_model.SuspensionCorner') as mock_corner_class:
             mock_fl = MagicMock()
@@ -155,7 +156,6 @@ class TestKinematicModel(unittest.TestCase):
                 self.assertEqual(rear_call_args[2], [-20, 20, 51])
 
     def test_snip_function(self):
-        """Test the _snip internal function that removes prefixes from corner hardpoints"""
         corner_dict = {
             'FLLO': [1, 2, 3],
             'FLHI': [4, 5, 6],
@@ -180,7 +180,6 @@ class TestKinematicModel(unittest.TestCase):
 
     @patch('kinematics.kinematic_model.RegularGridInterpolator')
     def test_interpolate_edge_cases(self, mock_interp_class):
-        """Test interpolation with edge cases like interpolating at grid points and outside the grid"""
         surrogate_array = np.zeros((3, 3, 11))
         surrogate_array[:, 0, 0] = np.array([-5, 0, 5])  # shock values
         surrogate_array[0, :, 1] = np.array([-10, 0, 10])  # steer values
@@ -202,7 +201,6 @@ class TestKinematicModel(unittest.TestCase):
 
     @patch('kinematics.kinematic_model.read_yaml')
     def test_model_dimensions(self, mock_read_yaml):
-        """Test that model dimensions match the specified shock and steering spaces"""
         mock_read_yaml.return_value = self.mock_hardpoints
         
         # Mock SuspensionCorner to avoid actual initialization
