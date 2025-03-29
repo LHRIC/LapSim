@@ -1,7 +1,12 @@
 import numpy as np
+
 class StateVector14:
-    def __init__(self, x0: np.ndarray):
+    def __init__(self, x0 = np.zeros(14)):
         self.state = x0
+        self.names_vec = ['x','y','z','roll','pitch','yaw','z_fl','z_fr','z_rl','z_rr','w_fl','w_fr','w_rl','w_rr']
+        self.names_vec_dt = [name + '_dt' for name in self.names_vec]
+        self.names_vec_ddt = [name + '_ddt' for name in self.names_vec]
+
     def unpack(self):
         self.x = self.state[0]
         self.y = self.state[1]

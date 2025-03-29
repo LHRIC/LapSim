@@ -9,6 +9,13 @@ class KinematicModel:
         pass
     def from_hardpoints(self,hardpoints_file):
         hardpoints = read_yaml(hardpoints_file)
+        
+        origin = ((np.array(hardpoints['front_left']['FLWC']) + np.array(hardpoints['rear_left']['RLWC']))/2)[0]
+        for key, value in hardpoints['front_left'].items():
+            hardpoints['front_left'][key] = value - origin
+        for key, value in hardpoints['rear_left'].items():
+            hardpoints['rear_left'][key] = value - origin
+
         self.steering_rack_delta = hardpoints['steering_rack_delta']
         self.front_shock_travel = hardpoints['front_shock_travel']
         self.rear_shock_travel = hardpoints['rear_shock_travel']

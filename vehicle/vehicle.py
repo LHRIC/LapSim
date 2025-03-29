@@ -22,6 +22,7 @@ class Vehicle:
         self.vehicle_inertia = params['vehicle_inertia']
         self.radius = 0.406 # Pull from params
         self.x_dot = np.zeros(len(x0))
+        self.center_of_mass = params['center_of_mass']
         return
     
     def _slip_angle(self, wheel_pose_abs, local_wheel_vel):
@@ -29,7 +30,7 @@ class Vehicle:
         wheel_vel_xy = local_wheel_vel[:2]
         heading_dot = np.dot(wheel_heading_xy, wheel_vel_xy)
         norm_product = np.linalg.norm(wheel_heading_xy)*np.linalg.norm(wheel_vel_xy)
-        slip_angle = np.arccos(heading_dot/norm_product)
+        slip_angle = np.arccos(heading_dot/norm_product) if norm_product != 0 else 0
         return slip_angle
     
     def _slip_ratio(self, wheel_pose_abs, local_wheel_vel, w_xx_dt):
@@ -37,7 +38,7 @@ class Vehicle:
         wheel_vel_xy = local_wheel_vel[:2]
         wheel_vel_relx = np.dot(wheel_vel_xy, wheel_heading_xy_u)
         tangential_vel = w_xx_dt*self.radius
-        slip_ratio = tangential_vel/wheel_vel_relx
+        slip_ratio = tangential_vel/wheel_vel_relx if wheel_vel_relx !=0 else 0
         return slip_ratio
 
     def evaluate(self):
@@ -91,10 +92,10 @@ class Vehicle:
             inclination_angle = wheel_pose_abs_euler[1]
 
             # force_tire = self.tire_model.fxyz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
-            force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
+            force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle)  + np.array([0,0,-9.81])*xx_mass
 
             force_tire_tangent = np.dot(force_tire, tangent_vec)
-            force_tire_compliment = force_tire - force_tire_tangent
+            force_tire_compliment = force_tire - force_tire_tangent*tangent_vec
             force_uns = force_tire_tangent - force_uns_shock
             z_ddt_vec[i] = force_uns/xx_mass
             corner_forces[i] = force_tire_compliment + force_uns_shock*tangent_vec
@@ -102,11 +103,11 @@ class Vehicle:
         # End of outboard component analysis
 
         gravity_force = self.vehicle_mass * np.array([0,0,-9.81])
-        # CG POSITION APPLIES TORQUE RAHH
+        gravity_torque = np.cross(self.center_of_mass, gravity_force)
         sum_forces = corner_forces.sum(axis=0) + gravity_force
-        sum_torques = corner_torques.sum(axis=0)
+        sum_torques = corner_torques.sum(axis=0) + gravity_torque
         accel_vec =  sum_forces/self.vehicle_mass
-        rot_accel_vec = np.linalg.pinv(self.vehicle_inertia) @ sum_torques
+        rot_accel_vec = np.linalg.inv(self.vehicle_inertia) @ sum_torques
         w_ddt_vec = np.zeros(4) #TODO
 
         self.x_dot[0:14] = self.state_vector.state[14:28]
