@@ -21,7 +21,7 @@ class TireModel:
         return np.array([0, 0, fz])
     
     def _normal_load(self, tire_displacement):
-        fz = self.Cfz * tire_displacement
+        fz = self.Cfz * tire_displacement/1000
         return fz
         
     def _comstock(self, fx0, fy0, slip_angle, slip_ratio):

@@ -4,11 +4,12 @@ class RK4:
         return
     def solve(fun, x0, t0, h, break_condition):
         def derivative(t,x,fun):
-            return np.array([x[1],fun(t,x)])
+            return np.array(fun(t,x))
         x = x0
         t = t0
         abort = break_condition(t,x)
         x_list = []
+        fx_list = []
         t_list = []
         while abort == False:
             k1 = derivative(t,x, fun)
@@ -19,5 +20,6 @@ class RK4:
             x = x + (h/6)*(k1+2*k2+2*k3+k4)
             x_list.append(x)
             t_list.append(t)
+            fx_list.append(k1)
             abort = break_condition(t,x)
-        return np.array(t_list), np.array(x_list)
+        return np.array(t_list), np.array(x_list), np.array(fx_list)

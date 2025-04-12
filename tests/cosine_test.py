@@ -6,7 +6,7 @@ def cosine_test():
     def fun(t, x):
         k = 1
         b = 0.5
-        return -k*x[0] - b*x[1]
+        return [x[1],-k*x[0] - b*x[1]]
 
     def check(t, x):
         if t > 20:

@@ -7,6 +7,6 @@ rear_shock_damping: 0.23529411764
 rear_shock_ride_compression: 21.00
 # rear_shock_ride_compression: 0
 vehicle_mass: 270
-vehicle_inertia: [[132.29,0,0],[0,32.93,0],[0,0,120.79]]
+vehicle_inertia: [[132290000,0,0],[0,32930000,0],[0,0,120790000]]
 center_of_mass: [-767.5, 0, 100]
 
