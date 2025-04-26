@@ -12,9 +12,11 @@ class KinematicModel:
         
         origin = ((np.array(hardpoints['front_left']['FLWC']) + np.array(hardpoints['rear_left']['RLWC']))/2)[0]
         for key, value in hardpoints['front_left'].items():
-            hardpoints['front_left'][key] = value - origin
+            if value != []:
+                hardpoints['front_left'][key][0] = value[0] - origin
         for key, value in hardpoints['rear_left'].items():
-            hardpoints['rear_left'][key] = value - origin
+            if value != []:
+                hardpoints['rear_left'][key][0] = value[0] - origin
 
         self.steering_rack_delta = hardpoints['steering_rack_delta']
         self.front_shock_travel = hardpoints['front_shock_travel']
@@ -33,6 +35,9 @@ class KinematicModel:
         self.rear_left = SuspensionCorner(self.rl_hardpoints, self.rear_arb_exists)
         self.front = self._generate_model(self.front_left, self.steering_rack_delta, self.front_shock_travel)
         self.rear = self._generate_model(self.rear_left, None, self.rear_shock_travel)
+        np.save('front_kin_surrogate', self.front)
+        np.save('rear_kin_surrogate', self.rear)
+
     
     def _generate_model(self, corner: SuspensionCorner, steering_rack_delta, shock_travel):
         shock_mid = np.linalg.norm(corner.shock_inboard.pos - corner.shock_outboard.pos)

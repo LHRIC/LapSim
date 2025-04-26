@@ -85,10 +85,9 @@ class Vehicle:
             wheel_pose_abs_euler = rot.from_matrix(wheel_pose_matrix).as_euler('xyz')
             force_damp, force_spring = shock.force_absolute(z_xx, z_xx_dt)
             force_shock = force_damp + force_spring
-            # print(z_xx_dt, force_damp, z_xx, force_shock)
             force_uns_shock = force_shock/motion_ratio
-            # tire_displacement = -np.clip(cp_pos_abs[2], None, 0)
-            tire_displacement = -cp_pos_abs[2]
+            tire_displacement = -np.clip(cp_pos_abs[2], 0, None)
+            # tire_displacement = -cp_pos_abs[2]
             yaw_rate_vec = np.array([0, 0, vehicle_yaw_dt])
             local_wheel_vel = np.cross(cp_pos_abs, yaw_rate_vec) + [self.state_vector.x_dt, self.state_vector.y_dt, 0]
             slip_angle = self._slip_angle(wheel_pose_abs, local_wheel_vel)
@@ -96,13 +95,14 @@ class Vehicle:
             inclination_angle = wheel_pose_abs_euler[1]
 
             # force_tire = self.tire_model.fxyz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
-            force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle) + np.array([0,0,-9.81])*xx_mass
-            # print(wheel, force_tire)
+            force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
+            force_uns_gravity = np.array([0,0,-9.81])*xx_mass
             force_tire_tangent = np.dot(force_tire, tangent_vec)
-            force_tire_compliment = force_tire - force_tire_tangent*tangent_vec
-            force_uns = force_tire_tangent - force_uns_shock
-            z_ddt_vec[i] = force_uns/xx_mass
-            corner_forces[i] = force_tire_compliment + force_uns_shock*tangent_vec
+            force_uns_gravity_tangent = np.dot(force_uns_gravity, tangent_vec)
+            sum_force_uns_tangent = force_tire_tangent + force_uns_gravity_tangent - force_uns_shock
+            z_ddt_vec[i] = sum_force_uns_tangent/xx_mass
+            corner_forces[i] = force_uns_shock*tangent_vec + (force_uns_gravity + force_tire) - sum_force_uns_tangent*tangent_vec
+            # corner_forces[i] = force_uns_shock*tangent_vec + (force_tire - force_tire_tangent*tangent_vec)
             corner_torques[i] = np.cross(cp_pos_abs, corner_forces[i])
         
         # End of outboard component analysis

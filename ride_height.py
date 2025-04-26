@@ -73,6 +73,6 @@ for i, flag in enumerate(x_map):
 axs[0].legend(loc='right')
 axs[1].legend(loc='right')
 plt.show()
-np.save('aisdias',tracker)
+
 
 
