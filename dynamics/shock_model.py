@@ -11,8 +11,9 @@ class ShockModel:
         return f_d , f_x
     def force_damper(self, v):
         #TODO add damper curves and stuff
-        force_abs = self.b*v*10000*1
+        force_abs = self.b*v
         return force_abs
     def force_spring(self, x):
         force_abs = np.clip(self.k*(x + self.x0), a_min=0, a_max=None)
+        force_abs = self.k*(x + self.x0)
         return force_abs

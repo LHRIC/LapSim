@@ -41,6 +41,7 @@ class Vehicle:
         slip_ratio = tangential_vel/wheel_vel_relx if wheel_vel_relx !=0 else 0
         return slip_ratio
 
+    # @profile
     def evaluate(self):
         self.state_vector.unpack()
         self.control_vector.unpack()
@@ -49,31 +50,38 @@ class Vehicle:
         vehicle_pitch = self.state_vector.pitch
         vehicle_yaw_dt = self.state_vector.yaw_dt
         rotation_obj = rot.from_euler('xy',[vehicle_roll, vehicle_pitch])
+        rotation_obj = rot.from_rotvec([vehicle_roll, vehicle_pitch, 0])
         rotation_matrix = rotation_obj.as_matrix()
         mirror_matrix = np.array([[1,0,0],[0,-1,0],[0,0,1]])
         corner_forces = np.zeros((4,3))
         z_ddt_vec = np.zeros(4)
         corner_torques = np.zeros((4,3))
         center_of_mass = rotation_matrix @ self.center_of_mass
+        z_xx_list = [self.state_vector.z_fl, self.state_vector.z_fr, self.state_vector.z_rl, self.state_vector.z_rr]
+        z_xx_dt_list = [self.state_vector.z_fl_dt, self.state_vector.z_fr_dt, self.state_vector.z_rl_dt, self.state_vector.z_rr_dt]
+        w_xx_dt_list = [self.state_vector.w_fl_dt, self.state_vector.w_fr_dt, self.state_vector.w_rl_dt, self.state_vector.w_rr_dt]
 
         for i, wheel in enumerate(['fl','fr','rl','rr']):
-            z_xx = eval("self.state_vector.z_" + wheel)
-            z_xx_dt = eval("self.state_vector.z_" + wheel + "_dt")
-            w_xx_dt = eval("self.state_vector.w_" + wheel + "_dt")
+            z_xx = z_xx_list[i]
+            z_xx_dt =z_xx_dt_list[i]
+            w_xx_dt = w_xx_dt_list[i]
             xx_mass = 7 ####### TODO
 
             if wheel == 'fl' or wheel == 'fr':
-                surrogate = self.kinematic_model.front
+                interpolator = self.kinematic_model.front_interpolator
             else:
-                surrogate = self.kinematic_model.rear
+                interpolator = self.kinematic_model.rear_interpolator
 
-            kin_vec = self.kinematic_model.interpolate(z_xx, self.control_vector.steer, surrogate)
+            kin_vec = self.kinematic_model.interpolate(-z_xx, self.control_vector.steer, interpolator)
             motion_ratio = kin_vec[2]
-            tangent_vec = mirror_matrix @ kin_vec[6:9] if wheel == 'fr' or wheel == 'rr' else kin_vec[6:9]
+            # motion_ratio = 1
+            tangent_vec_local = mirror_matrix @ kin_vec[6:9] if wheel == 'fr' or wheel == 'rr' else kin_vec[6:9]
+            tangent_vec = rotation_matrix @ tangent_vec_local
+            # tangent_vec = np.array([0,0,1])
             wheel_pose = kin_vec[9:11]
             cp_pos = mirror_matrix @ kin_vec[3:6] if wheel == 'fr' or wheel == 'rr' else kin_vec[3:6]
             wheel_pose_matrix = rot.from_euler('xz', wheel_pose).as_matrix()
-            wheel_pose_matrix = wheel_pose_matrix @ mirror_matrix if wheel == 'fr' or wheel == 'rr' else wheel_pose_matrix
+            wheel_pose_matrix = mirror_matrix @ wheel_pose_matrix if wheel == 'fr' or wheel == 'rr' else wheel_pose_matrix
             
             if wheel == 'fl' or wheel == 'fr':
                 shock = self.front_shock
@@ -83,10 +91,7 @@ class Vehicle:
             cp_pos_abs = rotation_matrix @ cp_pos + [0, 0, vehicle_z]
             wheel_pose_abs = rotation_matrix @ wheel_pose_matrix
             wheel_pose_abs_euler = rot.from_matrix(wheel_pose_matrix).as_euler('xyz')
-            force_damp, force_spring = shock.force_absolute(z_xx, z_xx_dt)
-            force_shock = force_damp + force_spring
-            force_uns_shock = force_shock/motion_ratio
-            tire_displacement = -np.clip(cp_pos_abs[2], 0, None)
+            tire_displacement = -np.clip(cp_pos_abs[2], a_min=None, a_max=0)
             # tire_displacement = -cp_pos_abs[2]
             yaw_rate_vec = np.array([0, 0, vehicle_yaw_dt])
             local_wheel_vel = np.cross(cp_pos_abs, yaw_rate_vec) + [self.state_vector.x_dt, self.state_vector.y_dt, 0]
@@ -94,15 +99,21 @@ class Vehicle:
             slip_ratio = self._slip_ratio(wheel_pose_abs, local_wheel_vel, w_xx_dt)
             inclination_angle = wheel_pose_abs_euler[1]
 
+            # Forces acting on unsprung
+            force_damp, force_spring = shock.force_absolute(z_xx, z_xx_dt)
+            force_shock = force_damp + force_spring
+            force_uns_shock = force_shock/motion_ratio
             # force_tire = self.tire_model.fxyz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
             force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
             force_uns_gravity = np.array([0,0,-9.81])*xx_mass
-            force_tire_tangent = np.dot(force_tire, tangent_vec)
-            force_uns_gravity_tangent = np.dot(force_uns_gravity, tangent_vec)
-            sum_force_uns_tangent = force_tire_tangent + force_uns_gravity_tangent - force_uns_shock
-            z_ddt_vec[i] = sum_force_uns_tangent/xx_mass
-            corner_forces[i] = force_uns_shock*tangent_vec + (force_uns_gravity + force_tire) - sum_force_uns_tangent*tangent_vec
-            # corner_forces[i] = force_uns_shock*tangent_vec + (force_tire - force_tire_tangent*tangent_vec)
+            sum_force_uns = force_tire + force_uns_gravity
+            sum_force_uns_proj = np.dot(sum_force_uns, tangent_vec) # Projection of sum force on velocity vector: scalar
+            sum_force_uns_orth = sum_force_uns - sum_force_uns_proj*tangent_vec # Orthagonal component of sum force wrt. velocity vector: vector r^3
+
+            # print(force_shock, force_tire)
+
+            z_ddt_vec[i] = (sum_force_uns_proj - force_uns_shock)*motion_ratio/xx_mass # ACCOUNT FOR MOTION RATIO PLZ
+            corner_forces[i] = sum_force_uns_orth + force_uns_shock*tangent_vec
             corner_torques[i] = np.cross(cp_pos_abs, corner_forces[i])
         
         # End of outboard component analysis
@@ -112,10 +123,13 @@ class Vehicle:
         sum_forces = corner_forces.sum(axis=0) + gravity_force
         sum_torques = corner_torques.sum(axis=0) + gravity_torque
         accel_vec =  sum_forces/self.vehicle_mass
-        rot_accel_vec = np.linalg.inv(self.vehicle_inertia) @ sum_torques
+        rot_accel_vec = np.linalg.inv(self.vehicle_inertia) @ (sum_torques - self.vehicle_inertia)
         w_ddt_vec = np.zeros(4) #TODO
 
         self.x_dot[0:14] = self.state_vector.state[14:28]
+        # self.x_dot[2] = 0.0
+        # self.x_dot[3], self.x_dot[4] = 0.0, 0.0
+        # self.x_dot[0], self.x_dot[1] = 0.0, 0.0
         self.x_dot[14:17] = accel_vec*1000
         self.x_dot[17:20] = rot_accel_vec
         self.x_dot[20:24] = z_ddt_vec*1000

@@ -1,7 +1,7 @@
 unit: mm
 steering_rack_delta: [39.5,51] # Maximum, number of points to generate
-front_shock_travel: [-20,20,51] # Minumum, maximum, number of points to generate
-rear_shock_travel: [-20,20,51] # Minumum, maximum, number of points to generate
+front_shock_travel: [-30,30,51] # Minumum, maximum, number of points to generate
+rear_shock_travel: [-30,30,51] # Minumum, maximum, number of points to generate
 front_arb_exists: True
 rear_arb_exists: False
 front_left:

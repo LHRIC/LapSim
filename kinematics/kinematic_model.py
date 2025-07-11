@@ -7,7 +7,7 @@ from scipy.interpolate import RegularGridInterpolator
 class KinematicModel:
     def __init__(self):
         pass
-    def from_hardpoints(self,hardpoints_file):
+    def from_hardpoints(self, hardpoints_file):
         hardpoints = read_yaml(hardpoints_file)
         
         origin = ((np.array(hardpoints['front_left']['FLWC']) + np.array(hardpoints['rear_left']['RLWC']))/2)[0]
@@ -35,6 +35,8 @@ class KinematicModel:
         self.rear_left = SuspensionCorner(self.rl_hardpoints, self.rear_arb_exists)
         self.front = self._generate_model(self.front_left, self.steering_rack_delta, self.front_shock_travel)
         self.rear = self._generate_model(self.rear_left, None, self.rear_shock_travel)
+        self.front_interpolator = self._init_interp(self.front)
+        self.rear_interpolator = self._init_interp(self.rear)
         np.save('front_kin_surrogate', self.front)
         np.save('rear_kin_surrogate', self.rear)
 
@@ -106,13 +108,16 @@ class KinematicModel:
                     ]
         return surrogate_array
     
-    def interpolate(self, relative_shock, relative_steer, surrogate_array) -> np.ndarray:
-        shock_space = surrogate_array[:,0,0]
-        steer_space = (surrogate_array[0,:,1]).T
-        interp = RegularGridInterpolator((shock_space, steer_space), surrogate_array, bounds_error=True, fill_value=None)
-        clip_shock = np.clip(relative_shock, shock_space[0], shock_space[-1])
-        clip_steer = np.clip(relative_steer, steer_space[0], steer_space[-1])
-        result = interp(np.array([clip_shock, clip_steer]))[0] 
+    def _init_interp(self, surrogate_array):
+        self.shock_space = surrogate_array[:,0,0]
+        self.steer_space = (surrogate_array[0,:,1]).T
+        interp = RegularGridInterpolator((self.shock_space, self.steer_space), surrogate_array, bounds_error=True, fill_value=None, method="linear")
+        return interp
+    
+    def interpolate(self, relative_shock, relative_steer, interp):
+        clip_shock = np.clip(relative_shock, self.shock_space[0], self.shock_space[-1])
+        clip_steer = np.clip(relative_steer, self.steer_space[0], self.steer_space[-1])
+        result = interp(np.array([clip_shock, clip_steer]))[0]
         # interp returns an array as it takes in an array of values to interpolate at so we take... 
         # ...the first element b/c we only interpolate at one point
         return result
