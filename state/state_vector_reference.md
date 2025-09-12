@@ -8,7 +8,7 @@
 | 3 | roll | rad |
 | 4 | pitch | rad |
 | 5 | yaw | rad |
-| 6 | front left wheel jounce | mm |
+| 6 | front left wheel jounce | mm (+extension) |
 | 7 | front right wheel jounce | mm |
 | 8 | rear left wheel jounce | mm |
 | 9 | rear right wheel jounce | mm |

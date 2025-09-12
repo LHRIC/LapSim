@@ -23,7 +23,6 @@ line_styles = [
 ]
 
 # x0[2] = 1.82510552
-x0[6:10] = [-20.47, -20.47, -21.00, -21.00]
 x0[2] = 20
 u0 = np.zeros(3)
 car = Vehicle(x0, u0)
@@ -41,14 +40,14 @@ def break_fun(t,x):
 def fun(t,x):
     car.state_vector.state = x
     x_dot = car.evaluate()
-    # if round(t*10)%1 == 0:
-        # print(f'{t}' ,end='\r')
-        # pass
+    if round(t*10)%1 == 0:
+        print(f'{t}' ,end='\r')
+        pass
     return x_dot
 
 # profiler = cProfile.Profile()
 # profiler.enable()
-sol = solve_ivp(fun,(0,10),x0, method='RK45')
+sol = solve_ivp(fun,(0,1.5),x0, method='RK45') #RK45 or BDF
 # profiler.disable()
 # profiler.print_stats(sort='time')
 
@@ -64,13 +63,29 @@ order_mag = lambda x: int(np.log10(max(np.abs(x_list[:,1,x])) + 1))
 for i in range(len(x_list[0])):
     plt.plot(t_list, x_list[:,i]/np.max(np.abs(x_list[:,i] + 1)), line_styles[i], label=names_vec[i])
 plt.legend()
+plt.title('All States')
 plt.show()
 
-plt.plot(t_list,x_list[:,6:10])
+plt.plot(t_list,x_list[:,6:8])
+plt.title('Front Jounces')
+plt.show()
+
+plt.plot(t_list,x_list[:,8:10])
+plt.title('Rear Jounces')
 plt.show()
 
 plt.plot(t_list,np.rad2deg(x_list[:,4]))
+plt.title('Pitch (deg)')
 plt.show()
 
 plt.plot(t_list,(x_list[:,2]))
+plt.title('Z')
+plt.show()
+
+plt.plot(t_list,x_list[:,20:22])
+plt.title('Front Jounces dt')
+plt.show()
+
+plt.plot(t_list,x_list[:,22:24])
+plt.title('Rear Jounces dt')
 plt.show()

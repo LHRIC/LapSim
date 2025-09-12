@@ -14,6 +14,11 @@ class ShockModel:
         force_abs = self.b*v
         return force_abs
     def force_spring(self, x):
-        force_abs = np.clip(self.k*(x + self.x0), a_min=0, a_max=None)
-        force_abs = self.k*(x + self.x0)
+        if abs(x) < 20:
+            force_abs = np.clip(self.k*(x + self.x0), a_min=0, a_max=None)
+            force_abs = self.k*(x + self.x0)
+        else:
+            force_abs = np.clip(self.k*100*(x + self.x0), a_min=0, a_max=None)
+            force_abs = self.k*100*(x + self.x0)
+
         return force_abs

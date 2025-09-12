@@ -49,7 +49,9 @@ class Vehicle:
         vehicle_roll = self.state_vector.roll
         vehicle_pitch = self.state_vector.pitch
         vehicle_yaw_dt = self.state_vector.yaw_dt
-        rotation_obj = rot.from_euler('xy',[vehicle_roll, vehicle_pitch])
+        angular_velocity_vec = np.array([self.state_vector.roll_dt, self.state_vector.pitch_dt, self.state_vector.yaw_dt])
+        # rotation_obj = rot.from_euler('xy',[vehicle_roll, vehicle_pitch])
+        # rotation_obj = rot.from_euler('xy',[0,0])
         rotation_obj = rot.from_rotvec([vehicle_roll, vehicle_pitch, 0])
         rotation_matrix = rotation_obj.as_matrix()
         mirror_matrix = np.array([[1,0,0],[0,-1,0],[0,0,1]])
@@ -72,12 +74,12 @@ class Vehicle:
             else:
                 interpolator = self.kinematic_model.rear_interpolator
 
-            kin_vec = self.kinematic_model.interpolate(-z_xx, self.control_vector.steer, interpolator)
+            kin_vec = self.kinematic_model.interpolate(z_xx, self.control_vector.steer, interpolator)
             motion_ratio = kin_vec[2]
-            # motion_ratio = 1
+            motion_ratio = 1 ##### REMOVE
             tangent_vec_local = mirror_matrix @ kin_vec[6:9] if wheel == 'fr' or wheel == 'rr' else kin_vec[6:9]
             tangent_vec = rotation_matrix @ tangent_vec_local
-            # tangent_vec = np.array([0,0,1])
+            tangent_vec = np.array([0,0,1]) #### REMOVE
             wheel_pose = kin_vec[9:11]
             cp_pos = mirror_matrix @ kin_vec[3:6] if wheel == 'fr' or wheel == 'rr' else kin_vec[3:6]
             wheel_pose_matrix = rot.from_euler('xz', wheel_pose).as_matrix()
@@ -100,8 +102,8 @@ class Vehicle:
             inclination_angle = wheel_pose_abs_euler[1]
 
             # Forces acting on unsprung
-            force_damp, force_spring = shock.force_absolute(z_xx, z_xx_dt)
-            force_shock = force_damp + force_spring
+            force_damp, force_spring = shock.force_absolute(-z_xx, z_xx_dt) # Positive force = negative z_xx (compression)
+            force_shock = -force_damp + force_spring
             force_uns_shock = force_shock/motion_ratio
             # force_tire = self.tire_model.fxyz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
             force_tire = self.tire_model.fz(tire_displacement, slip_angle, slip_ratio, inclination_angle)
@@ -112,7 +114,7 @@ class Vehicle:
 
             # print(force_shock, force_tire)
 
-            z_ddt_vec[i] = (sum_force_uns_proj - force_uns_shock)*motion_ratio/xx_mass # ACCOUNT FOR MOTION RATIO PLZ
+            z_ddt_vec[i] = (force_uns_shock - sum_force_uns_proj)*motion_ratio/xx_mass # ACCOUNT FOR MOTION RATIO PLZ
             corner_forces[i] = sum_force_uns_orth + force_uns_shock*tangent_vec
             corner_torques[i] = np.cross(cp_pos_abs, corner_forces[i])
         
@@ -123,13 +125,10 @@ class Vehicle:
         sum_forces = corner_forces.sum(axis=0) + gravity_force
         sum_torques = corner_torques.sum(axis=0) + gravity_torque
         accel_vec =  sum_forces/self.vehicle_mass
-        rot_accel_vec = np.linalg.inv(self.vehicle_inertia) @ (sum_torques - self.vehicle_inertia)
+        rot_accel_vec = np.linalg.inv(self.vehicle_inertia) @ (sum_torques - np.cross(angular_velocity_vec, self.vehicle_inertia @ angular_velocity_vec))
         w_ddt_vec = np.zeros(4) #TODO
 
         self.x_dot[0:14] = self.state_vector.state[14:28]
-        # self.x_dot[2] = 0.0
-        # self.x_dot[3], self.x_dot[4] = 0.0, 0.0
-        # self.x_dot[0], self.x_dot[1] = 0.0, 0.0
         self.x_dot[14:17] = accel_vec*1000
         self.x_dot[17:20] = rot_accel_vec
         self.x_dot[20:24] = z_ddt_vec*1000
