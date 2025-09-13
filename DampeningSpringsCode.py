@@ -30,7 +30,7 @@ def main():
         match = re.search(pattern, col)
         if match:
             setting = float(match.group(1))
-            setting_values.add(setting)
+            setting_values.add(setting)#change
 
     if not setting_values:
         print("No valid settings found in CSV file")
