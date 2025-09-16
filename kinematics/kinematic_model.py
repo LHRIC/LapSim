@@ -2,6 +2,7 @@ import numpy as np
 from kinematics.kinematic_objects import SuspensionCorner
 from kinematics.kinematic_solver import kinematic_solver
 from utility.read_yaml import read_yaml
+from utility.read_xlsx import read_xlsx
 from scipy.interpolate import RegularGridInterpolator
 
 class KinematicModel:
@@ -9,7 +10,6 @@ class KinematicModel:
         pass
     def from_hardpoints(self, hardpoints_file):
         hardpoints = read_yaml(hardpoints_file)
-        
         origin = ((np.array(hardpoints['front_left']['FLWC']) + np.array(hardpoints['rear_left']['RLWC']))/2)[0]
         for key, value in hardpoints['front_left'].items():
             if value != []:
@@ -39,6 +39,45 @@ class KinematicModel:
         self.rear_interpolator = self._init_interp(self.rear)
         np.save('front_kin_surrogate', self.front)
         np.save('rear_kin_surrogate', self.rear)
+
+    def from_xlsx(self, hardpoints_file, steering_delta, front_shock_delta, rear_shock_delta):
+        hardpoints = read_xlsx(hardpoints_file)
+        hardpoints['steering_rack_delta'] = steering_delta
+        hardpoints['front_shock_travel'] = front_shock_delta
+        hardpoints['rear_shock_travel'] = rear_shock_delta
+        hardpoints['front_arb_exists'] = False
+        hardpoints['rear_arb_exists'] = False
+
+        origin = ((np.array(hardpoints['front_left']['FLWC']) + np.array(hardpoints['rear_left']['RLWC']))/2)[0]
+        for key, value in hardpoints['front_left'].items():
+            if value != []:
+                hardpoints['front_left'][key][0] = value[0] - origin
+        for key, value in hardpoints['rear_left'].items():
+            if value != []:
+                hardpoints['rear_left'][key][0] = value[0] - origin
+
+        self.steering_rack_delta = hardpoints['steering_rack_delta']
+        self.front_shock_travel = hardpoints['front_shock_travel']
+        self.rear_shock_travel = hardpoints['rear_shock_travel']
+        self.front_arb_exists = hardpoints['front_arb_exists']
+        self.rear_arb_exists = hardpoints['rear_arb_exists']
+        def _snip(corner_dict):
+            hardpoints_snipped = {}
+            for key, value in corner_dict.items():
+                new_key = key[2:]
+                hardpoints_snipped[new_key] = value
+            return hardpoints_snipped
+        self.fl_hardpoints = _snip(hardpoints['front_left'])
+        self.rl_hardpoints = _snip(hardpoints['rear_left'])
+        self.front_left = SuspensionCorner(self.fl_hardpoints, self.front_arb_exists)
+        self.rear_left = SuspensionCorner(self.rl_hardpoints, self.rear_arb_exists)
+        self.front = self._generate_model(self.front_left, self.steering_rack_delta, self.front_shock_travel)
+        self.rear = self._generate_model(self.rear_left, None, self.rear_shock_travel)
+        self.front_interpolator = self._init_interp(self.front)
+        self.rear_interpolator = self._init_interp(self.rear)
+        np.save('front_kin_surrogate', self.front)
+        np.save('rear_kin_surrogate', self.rear)
+
 
     
     def _generate_model(self, corner: SuspensionCorner, steering_rack_delta, shock_travel):

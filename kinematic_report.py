@@ -5,7 +5,8 @@ import matplotlib.ticker as FuncFormatter
 import numpy as np
 
 test_kin_model = KinematicModel()
-test_kin_model.from_hardpoints('parameters/hardpoints.yaml')
+# test_kin_model.from_hardpoints('parameters/hardpoints.yaml')
+test_kin_model.from_xlsx('parameters/HDPT_Export.xlsx', [39.5, 51], [-30, 30, 51], [-30, 30, 51])
 f = test_kin_model.front
 r = test_kin_model.rear
 

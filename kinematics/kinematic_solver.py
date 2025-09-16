@@ -24,5 +24,6 @@ def kinematic_solver(dependent_objects: Hardpoint, residual_objects: Linkage | C
     for obj in update_objects:
         obj.update()
     if solution.success == False:
-        print(solution.success,solution.nfev,solution.fun)
+        # print(solution.success,solution.nfev,solution.fun)
+        pass
     return 
