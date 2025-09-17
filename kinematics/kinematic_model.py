@@ -4,6 +4,7 @@ from kinematics.kinematic_solver import kinematic_solver
 from utility.read_yaml import read_yaml
 from utility.read_xlsx import read_xlsx
 from scipy.interpolate import RegularGridInterpolator
+from kinematics.roll_centers import cp_roll_projection
 
 class KinematicModel:
     def __init__(self):
@@ -91,6 +92,7 @@ class KinematicModel:
         shock_compression = np.empty(shape)
         steer_rack_positions = np.empty(shape3d)
         wheel_poses = np.empty(shape3d)
+        instant_center = np.empty(shape3d)
 
         for i, shock in enumerate(shock_space):
             corner.linear.length = shock
@@ -101,7 +103,13 @@ class KinematicModel:
                 steer_rack_positions[i,j] = corner.inboard_tie.pos
                 shock_compression[i,j] = corner.shock.length()
                 wheel_poses[i,j] = corner.wheel_sys.delta_angle()
-
+                instant_center[i,j] = cp_roll_projection(corner.lower_outboard.pos, 
+                                                         corner.lower_inboard_fore.pos, 
+                                                         corner.lower_inboard_aft.pos,
+                                                         corner.upper_outboard.pos,
+                                                         corner.upper_inboard_fore.pos,
+                                                         corner.upper_inboard_aft.pos,
+                                                         corner.contact_patch.pos)
         delta_cp_pos = np.empty((shape[0],shape[1],3))
         delta_cp_pos_norm = np.empty(shape)
         tangent_vec = np.empty((shape[0],shape[1],3))
@@ -109,10 +117,9 @@ class KinematicModel:
         motion_ratio = np.empty(shape)
         relative_shock = np.empty(shape)
         relative_steer = np.empty(shape)
-        z_pos = np.empty(shape)
-        
+
         ### UPDATE SHAPE IF ADDING VARIABLES ###
-        surrogate_array = np.zeros((shape[0],shape[1],11)) 
+        surrogate_array = np.zeros((shape[0],shape[1],14)) 
         ### -------------------------------- ###
         
         for i, shock in enumerate(shock_space):
@@ -143,7 +150,10 @@ class KinematicModel:
                     tangent_vec[i,j,1],                 # 7
                     tangent_vec[i,j,2],                 # 8
                     wheel_poses[i,j,0],                 # 9
-                    wheel_poses[i,j,2]                  # 10
+                    wheel_poses[i,j,2],                 # 10
+                    instant_center[i,j,0],              # 11
+                    instant_center[i,j,1],              # 12
+                    instant_center[i,j,2]               # 13
                     ]
         return surrogate_array
     
@@ -151,6 +161,12 @@ class KinematicModel:
         self.shock_space = surrogate_array[:,0,0]
         self.steer_space = (surrogate_array[0,:,1]).T
         interp = RegularGridInterpolator((self.shock_space, self.steer_space), surrogate_array, bounds_error=True, fill_value=None, method="linear")
+        return interp
+    
+    def _init_z_interp(self, surrogate_array):
+        middle_steer_idx = len((surrogate_array[0,:,1]).T)//2
+        z_axis_input = surrogate_array[:,middle_steer_idx,5]
+        interp = RegularGridInterpolator((z_axis_input), np.squeeze(surrogate_array[:,middle_steer_idx,:]))
         return interp
     
     def interpolate(self, relative_shock, relative_steer, interp):
