@@ -4,7 +4,7 @@ from kinematics.kinematic_solver import kinematic_solver
 from utility.read_yaml import read_yaml
 from utility.read_xlsx import read_xlsx
 from scipy.interpolate import RegularGridInterpolator
-from kinematics.roll_centers import cp_roll_projection
+from kinematics.instant_centers import cp_ic_projection
 
 class KinematicModel:
     def __init__(self):
@@ -103,7 +103,7 @@ class KinematicModel:
                 steer_rack_positions[i,j] = corner.inboard_tie.pos
                 shock_compression[i,j] = corner.shock.length()
                 wheel_poses[i,j] = corner.wheel_sys.delta_angle()
-                instant_center[i,j] = cp_roll_projection(corner.lower_outboard.pos, 
+                instant_center[i,j] = cp_ic_projection(corner.lower_outboard.pos, 
                                                          corner.lower_inboard_fore.pos, 
                                                          corner.lower_inboard_aft.pos,
                                                          corner.upper_outboard.pos,

@@ -27,7 +27,7 @@ def plane_axis_intersection(plane:Plane, axis:Axis):
     point = axis.point + t*axis.vector
     return point
 
-def cp_roll_projection(LO, LIF, LIA, UO, UIF, UIA, CP):
+def cp_ic_projection(LO, LIF, LIA, UO, UIF, UIA, CP):
     lower_plane = Plane(LO, LIF, LIA)
     upper_plane = Plane(UO, UIF, UIA)
     intersection_axis = plane_plane_intersection(lower_plane, upper_plane)
