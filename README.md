@@ -22,3 +22,8 @@ If using the Jupyter notebook:
 
 If using the Python script:
 1. Do the previous steps 1 and 2. To run the script, open the terminal and type in ```python kinematics_model.py```
+
+To do: 
+- add a debugging, set up envirnment for downloading python
+- make things more baby steps for our favorite meches
+- update requirements.txt
