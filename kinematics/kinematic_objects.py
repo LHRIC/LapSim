@@ -76,18 +76,18 @@ class CoordinateSystem:
         self.axis1 = (self.point2.pos - self.point1.pos) / np.linalg.norm(self.point2.pos - self.point1.pos)
         self.axis2 = np.cross(self.point2.pos-self.point1.pos,self.point3.pos-self.point1.pos)/np.linalg.norm(np.cross(self.point2.pos-self.point1.pos,self.point3.pos-self.point1.pos))
         self.axis3 = np.cross(self.axis1, self.axis2)/np.linalg.norm(np.cross(self.axis1, self.axis2))
-        self.axis1_initial = self.axis1
-        self.axis2_initial = self.axis2
-        self.axis3_initial = self.axis3
-        self.matrix = np.array([self.axis1,self.axis2,self.axis3])
-        self.initial_matrix = np.array([self.axis1_initial,self.axis2_initial,self.axis3_initial])
+        self.axis1_initial = self.axis1.copy()
+        self.axis2_initial = self.axis2.copy()
+        self.axis3_initial = self.axis3.copy()
+        self.matrix = np.array([self.axis1,self.axis2,self.axis3]).T
+        self.initial_matrix = np.array([self.axis1_initial,self.axis2_initial,self.axis3_initial]).T
     def update(self):
         self.axis1 = (self.point2.pos - self.point1.pos) / np.linalg.norm(self.point2.pos - self.point1.pos)
         self.axis2 = np.cross(self.point2.pos-self.point1.pos,self.point3.pos-self.point1.pos)/np.linalg.norm(np.cross(self.point2.pos-self.point1.pos,self.point3.pos-self.point1.pos))
         self.axis3 = np.cross(self.axis1, self.axis2)/np.linalg.norm(np.cross(self.axis1, self.axis2))
-        self.matrix = np.array([self.axis1,self.axis2,self.axis3])
+        self.matrix = np.array([self.axis1,self.axis2,self.axis3]).T
     def delta_angle(self):
-        delta_mat = np.linalg.inv(self.initial_matrix) @ self.matrix
+        delta_mat = self.matrix @ np.linalg.inv(self.initial_matrix) 
         rot_obj = rot.from_matrix(delta_mat)
         euler_angles = rot_obj.as_euler('xyz')
         return euler_angles

@@ -96,7 +96,9 @@ class KinematicModel:
             corner.linear.length = shock
             for j, steer in enumerate(steer_space):
                 corner.inboard_tie.translate(steer,[0,1,0])
-                kinematic_solver(corner.dependent_objects, corner.residual_objects, corner.update_objects)
+                success = kinematic_solver(corner.dependent_objects, corner.residual_objects, corner.update_objects)
+                if success == False:
+                    print(f"Solver failure at: Shock Delta = {shock - shock_mid}, Steer Delta = {steer}")
                 contact_patch_positions[i,j] = corner.contact_patch.pos
                 steer_rack_positions[i,j] = corner.inboard_tie.pos
                 shock_compression[i,j] = corner.shock.length()

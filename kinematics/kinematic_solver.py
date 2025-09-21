@@ -17,12 +17,10 @@ def kinematic_solver(dependent_objects: Hardpoint, residual_objects: Linkage | C
     def _objfun(x,*args):
         return _residuals(x,args[0],args[1],args[2])
         
-    solution = scipy.root(_objfun,x0,tol=1e-8,args=(positions_shape,dependent_objects,residual_objects))
+    solution = scipy.root(_objfun,x0,tol=1e-10,args=(positions_shape,dependent_objects,residual_objects),method='hybr')
     soln_positions = np.reshape(solution.x,positions_shape)
     for i, obj in enumerate(dependent_objects):
         obj.pos = soln_positions[i]
     for obj in update_objects:
         obj.update()
-    if solution.success == False:
-        print(solution.success,solution.nfev,solution.fun)
-    return 
+    return solution.success
