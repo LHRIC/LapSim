@@ -21,7 +21,7 @@ If using the Jupyter notebook:
 3. To install the Python environment:
     - Open up your terminal and type in ```which python``` to check if you have Python already installed.
       - If a directory such as ```/opt/anaconda3/bin/python``` pops up, then Python is already installed. Then, check the version by typing in the terminal ```python --version``` or ```python3 --version.```
-      - If no directory pops up, the easiest way is to set up Python using MiniConda (it is free and pretty lightweight). (MiniConda download and setup instructions are at the bottom. 
+      - If no directory pops up, the easiest way is to set up Python is using MiniConda (it is free and pretty lightweight). (MiniConda download and setup instructions are at the bottom. 
 4. Add the desired hardpoints by either changing:
    - The  ```.yaml``` file that is in the parameters folder.
    - If you would like to add your own ```.yaml``` file, ensure that it is in the parameters folder and in the first cell, the ```kin_model_1.from_hardpoints('<filename.yaml>')``` reflects it.
