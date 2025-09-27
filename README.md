@@ -25,7 +25,11 @@ If using the Jupyter notebook:
       - If no directory pops up, the easiest way to set up Python is using MiniConda (it is free and pretty lightweight). 
         - Install MiniConda:
           - Download the installer from this link: https://www.anaconda.com/download/success
-          - Once downloaded, open your computer terminal (you can find this by clicking the Windows logo and searching for the terminal, or if you're on a Mac, find it in LaunchPad). In the terminal, type ```conda```. A lot of text should pop up. If it does, then it is working. If it does not, then you need to edit your environmental variables and add MiniConda to your path. (If you are on a Windows computer, find ```Edit the system environmental variables```, open this by finding it in the search. Then, click on the ```Advanced``` tab, at the bottom of the page, click on ```Environmental Variables...``` Select ```Path``` under System variables, then click ```Edit...``` Press ```New``` and copy in the install path for MiniConda which should be something like ```C:\Users\<user name>\miniconda3\Script```
+          - Once downloaded, open your computer terminal (you can find this by clicking the Windows logo and searching for the terminal, or if you're on a Mac, find it in LaunchPad). In the terminal, type ```conda```. A lot of text should pop up.
+            - If it does, then it is working. If it does not, then you need to edit your environmental variables and add MiniConda to your path. (If you are on a Windows computer, find ```Edit the system environmental variables```, open this by finding it in the search.
+            - Click on the ```Advanced``` tab, at the bottom of the page, click on ```Environmental Variables...```
+            - Select ```Path``` under System variables, then click ```Edit...```
+            - Press ```New``` and copy in the install path for MiniConda which should be something like ```C:\Users\<user name>\miniconda3\Script```
         - Once you have downloaded MiniConda, restart your VS Code by closing it and opening it again. This will link the Conda 
 4. Add the desired hardpoints by either changing:
    - The  ```.yaml``` file that is in the parameters folder.
