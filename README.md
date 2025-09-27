@@ -5,6 +5,10 @@ This project implements a kinematics model that allows simulation, analysis, and
 
 ## Requirements 
 - Python 3.9+
+- MatPlotLib 3.10+
+- Numpy 2.3+
+- Pandas 2.3+
+- Scipy 1.16+
 
 ### Dependencies
 Install required packages with:
