@@ -26,7 +26,7 @@ If using the Jupyter notebook:
 3. To install the Python environment:
     - Open up your terminal (Open a terminal by clicking the terminal button on the top bar, there should be a drop-down, then click on new terminal) and type in ```py``` or ```which python``` to check if you have Python already installed.
       - After typing in the command, if a directory such as ```/opt/anaconda3/bin/python``` pops up, then Python is already installed. Then, check the version by typing in the terminal ```python --version``` or ```python3 --version.```
-      - If no directory pops up, the easiest way to set up Python is using MiniConda (it is free and pretty lightweight). 
+      - If no directory pops up, the easiest way to set up Python is using MiniConda (it is free and pretty lightweight). Check if you have Conda my typing in the terminal ```conda```.
         - Install MiniConda:
           - Download the installer from this link: https://www.anaconda.com/download/success
           - Once downloaded, open your computer terminal (you can find this by clicking the Windows logo and searching for the terminal, or if you're on a Mac, find it in LaunchPad). In the terminal, type ```conda```. A lot of text should pop up.
