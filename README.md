@@ -24,7 +24,7 @@ If using the Jupyter notebook:
    - If you do not have Git, click the green ```Code``` button in the upper right-hand corner of the LAPSIM HOMEPAGE ON THE GITHUB WEBSITE. There should be a drop-down, click ```download ZIP```. Once downloaded, unzip the folder and place it somewhere accessible, such as ```Desktop```.
    - Now go to VS Code, and click open folder, it will now pop up your file system. Open LapSim. You should now see all of the files on the left-hand side of your VS Code. 
 3. To install the Python environment:
-    - Open up your terminal (Open a terminal by clicking the terminal button on the top bar, there should be a drop-down, then click on new terminal) and type in ```which python``` to check if you have Python already installed.
+    - Open up your terminal (Open a terminal by clicking the terminal button on the top bar, there should be a drop-down, then click on new terminal) and type in ```py``` or ```which python``` to check if you have Python already installed.
       - After typing in the command, if a directory such as ```/opt/anaconda3/bin/python``` pops up, then Python is already installed. Then, check the version by typing in the terminal ```python --version``` or ```python3 --version.```
       - If no directory pops up, the easiest way to set up Python is using MiniConda (it is free and pretty lightweight). 
         - Install MiniConda:
