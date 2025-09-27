@@ -48,5 +48,3 @@ Common Mistakes and How to Debug:
   - Window: ```python -m pip install --upgrade pip``` or ```python -m pip install --upgrade pip --user```
   - MacOS: ```python3 -m pip install --upgrade pip``` or if you have homebrew ```brew upgrade python```
 - Copying and pasting the error into ChatGPT is very helpful.
-
-- update requirements.txt
