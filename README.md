@@ -36,18 +36,12 @@ If using the Jupyter notebook:
    - If you would like to add your own ```.yaml``` file, ensure that it is in the parameters folder and in the first cell, the ```kin_model_1.from_hardpoints('<filename.yaml>')``` reflects it.
    - If you would like to use an Excel sheet with the hardpoints, ensure that the labels of each hard point follow the convention detailed below. Ensure that the Excel file is in the parameters folder and that you are using the correct function with the corresponding file name ```test_kin_model.from_xlsx('parameters/<filename>.xlsx', steering_delta, front_left_delta, rear_left_delta)```
 5. Open the ```kinematics_model.ipynb``` file, or if you want to compare two sets of hardpoints, use ```kinematic_report_comparisons.ipynb```
-6. Before running, download the required Python libraries. 
-7. Click ```Run all```
+6. Before running, download the required Python libraries. Either download by typing in ```pip install -r requirements.txt``` or install each individually as ```pip install numpy```, ```pip install pandas```. 
+7. Click ```Run all```, it will prompt to choose ```Python``` or ```Kernel```, click ```Kernel``` and select ```base```, it should be the Conda environment. 
 8. Run cells sequentially to build the kinematic arrays, analyze results, and visualize. NOTE: If you change something like the hard points file or Excel sheet, you will need to rerun all of the cells (especially the FIRST cell). THIS IS VERY IMPORTANT, OR THE CODE WILL NOT PROCESS THE NEW DATA.  
 
 If using the Python script:
-1. Do the previous steps 1-4. To run the script, open the terminal and type in ```python kinematics_model.py```
-
-Install MiniConda (Follow the instructions on the website): https://www.anaconda.com/docs/getting-started/miniconda/install
-- more mini-conda instructions
-- edit the environmental variable (need to restart computer)
-- path to executables need to be added to path (open environmental variables and add it)
-- when pip install need to ```conda init``` close and reopen the terminal, then ```conda activate```
+1. Do the previous steps 1-6. To run the script, open the terminal and type in ```python kinematics_model.py```
 
 Common Mistakes and How to Debug: 
 - Python version is too old, update the version by
