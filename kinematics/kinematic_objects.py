@@ -124,20 +124,20 @@ class SuspensionCorner:
         self.arb_arm_pickup = Hardpoint(hardpoints['AP'],False)
         self.arb_bar_end = Hardpoint(hardpoints['BE'],True)
 
-        self.ca_lower_aft = Linkage(self.lower_outboard,self.lower_inboard_aft)
-        self.ca_lower_fore = Linkage(self.lower_outboard,self.lower_inboard_fore)
-        self.ca_upper_aft = Linkage(self.upper_outboard,self.upper_inboard_aft)
-        self.ca_upper_fore = Linkage(self.upper_outboard, self.upper_inboard_fore)
-        self.tie_rod = Linkage(self.outboard_tie,self.inboard_tie)
-        self.p_rod = Linkage(self.outboard_prod,self.inboard_prod,style="p_rod")
+        self.ca_lower_aft = Linkage(self.lower_outboard,self.lower_inboard_aft) # Lower Aft A-Arm
+        self.ca_lower_fore = Linkage(self.lower_outboard,self.lower_inboard_fore) # Lower Fore A-Arm
+        self.ca_upper_aft = Linkage(self.upper_outboard,self.upper_inboard_aft)  # Upper Aft A-Arm
+        self.ca_upper_fore = Linkage(self.upper_outboard, self.upper_inboard_fore) # Upper Fore A-Arm
+        self.tie_rod = Linkage(self.outboard_tie,self.inboard_tie)  # Tie Rod
+        self.p_rod = Linkage(self.outboard_prod,self.inboard_prod,style="p_rod")  # Push/Pull Rod
         self.bc_1 = Linkage(self.bellcrank_anchor,self.inboard_prod)
         self.bc_2 = Linkage(self.bellcrank_anchor,self.shock_outboard)
         self.bc_3 = Linkage(self.inboard_prod,self.shock_outboard)
         self.kpi = Linkage(self.lower_outboard,self.upper_outboard)
-        self.bellcrank_prod_arb_pickup = Linkage(self.inboard_prod,self.arb_bellcrank_pickup)
+       # self.bellcrank_prod_arb_pickup = Linkage(self.inboard_prod,self.arb_bellcrank_pickup)
         self.bellcrank_arb_pickup_shock = Linkage(self.arb_bellcrank_pickup,self.shock_outboard)
         self.bellcrank_anchor_arb_pickup = Linkage(self.bellcrank_anchor,self.arb_bellcrank_pickup)
-        self.arb_droplink = Linkage(self.arb_bellcrank_pickup,self.arb_bar_end)
+        self.arb_droplink = Linkage(self.arb_bellcrank_pickup,self.arb_arm_pickup)
         self.arb_arm = Linkage(self.arb_arm_pickup,self.arb_bar_end)
         self.apex1, self.apex2, self.apex3 = self.apex_generation()
         self.uns1, self.uns2  = self.unsprung_generation()
@@ -148,6 +148,8 @@ class SuspensionCorner:
         self.axis_check1 = Normal(self.bc_axis,self.inboard_prod)
         self.axis_check2 = Normal(self.bc_axis,self.shock_outboard)
         self.axis_check3 = Normal(self.bc_axis,self.arb_bellcrank_pickup)
+        self.bc_axis2 = Axis(self.arb_bar_end, Hardpoint(self.arb_bar_end.pos + np.array([0, 0, 1]), True), Hardpoint(self.arb_bar_end.pos + np.array([1, 0, 0]), True))
+        self.axis_check4 = Normal(self.bc_axis2, self.arb_arm_pickup)
         self.wheel_sys = CoordinateSystem(self.lower_outboard,self.upper_outboard,self.outboard_tie)
         self.wheel = Rigid(self.contact_patch,self.lower_outboard,self.wheel_sys)
 
@@ -166,7 +168,7 @@ class SuspensionCorner:
                              self.apex3,
                              self.uns1,
                              self.uns2,
-                             self.bellcrank_prod_arb_pickup,
+                             #self.bellcrank_prod_arb_pickup,
                              self.bellcrank_arb_pickup_shock,
                              self.bellcrank_anchor_arb_pickup,
                              self.arb_droplink,
@@ -192,7 +194,7 @@ class SuspensionCorner:
         self.arb_bar_end.pos = self.arb_bar_end.pos.copy() #Project ARB axis to arm plane
         self.arb_bar_end.pos[1] = self.arb_arm_pickup.pos[1]
         self.dependent_objects = [point for point in self.point_list if point.fixed != True]
-        self.residual_objects = self.linkage_list + [self.linear, self.axis_check1, self.axis_check2, self.axis_check3]
+        self.residual_objects = self.linkage_list + [self.linear, self.axis_check1, self.axis_check2, self.axis_check3, self.axis_check4]
         self.update_objects = [self.wheel]
         
     def apex_generation(self):
@@ -220,11 +222,21 @@ class SuspensionCorner:
     def arb_arm_angle(self):
         rest_vec = self.resting_arb_vector()
         current_vec = self.current_arb_vector()
-        mag_cross = np.linalg.norm(np.cross(rest_vec, current_vec))
-        mag_product = np.linalg.norm(rest_vec) * np.linalg.norm(current_vec)
-        if mag_product != 0:
-            sin_theta = np.clip(mag_cross/mag_product,-1,1)
-        else:
-            sin_theta = 0
-        return np.degrees(np.arcsin(sin_theta))
+
+        reference_axis = np.array([0, 1, 0])
+
+        #Normalize the vectors
+        rest_vec = rest_vec / np.linalg.norm(rest_vec)
+        current_vec = current_vec / np.linalg.norm(current_vec)
+
+        cross = np.cross(rest_vec, current_vec)
+        sin_theta = np.dot(cross, reference_axis) 
+        cos_theta = np.dot(rest_vec, current_vec)
+
+        angle = np.degrees(np.arctan2(sin_theta, cos_theta))  #Better than arcsin
+
+        return angle
     
+    def contact_patch_z(self):
+        self.wheel.update()
+        return self.contact_patch.pos[2]-self.contact_patch.initial_pos[2]
