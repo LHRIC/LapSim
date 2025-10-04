@@ -91,6 +91,8 @@ class KinematicModel:
         shock_compression = np.empty(shape)
         steer_rack_positions = np.empty(shape3d)
         wheel_poses = np.empty(shape3d)
+        arb_angle = np.empty(shape)
+        contact_patch_z_travel = np.empty(shape)
 
         for i, shock in enumerate(shock_space):
             corner.linear.length = shock
@@ -103,6 +105,8 @@ class KinematicModel:
                 steer_rack_positions[i,j] = corner.inboard_tie.pos
                 shock_compression[i,j] = corner.shock.length()
                 wheel_poses[i,j] = corner.wheel_sys.delta_angle()
+                arb_angle[i,j] = corner.arb_arm_angle()
+                contact_patch_z_travel[i,j] = corner.contact_patch_z()
 
         delta_cp_pos = np.empty((shape[0],shape[1],3))
         delta_cp_pos_norm = np.empty(shape)
@@ -114,7 +118,7 @@ class KinematicModel:
         z_pos = np.empty(shape)
         
         ### UPDATE SHAPE IF ADDING VARIABLES ###
-        surrogate_array = np.zeros((shape[0],shape[1],11)) 
+        surrogate_array = np.zeros((shape[0],shape[1],13)) 
         ### -------------------------------- ###
         
         for i, shock in enumerate(shock_space):
@@ -145,7 +149,9 @@ class KinematicModel:
                     tangent_vec[i,j,1],                 # 7
                     tangent_vec[i,j,2],                 # 8
                     wheel_poses[i,j,0],                 # 9
-                    wheel_poses[i,j,2]                  # 10
+                    wheel_poses[i,j,2],                 # 10
+                    arb_angle[i,j],                     # 11
+                    contact_patch_z_travel[i,j]         # 12
                     ]
         return surrogate_array
     
@@ -162,3 +168,4 @@ class KinematicModel:
         # interp returns an array as it takes in an array of values to interpolate at so we take... 
         # ...the first element b/c we only interpolate at one point
         return result
+    
