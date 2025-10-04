@@ -151,7 +151,7 @@ class KinematicModel:
                     tangent_vec[i,j,1],                 # 7
                     tangent_vec[i,j,2],                 # 8
                     wheel_poses[i,j,0],                 # 9
-                    wheel_poses[i,j,2],                  # 10
+                    wheel_poses[i,j,2],                 # 10
                     arb_angle[i,j],                     # 11
                     contact_patch_z_travel[i,j]         # 12
                     ]
