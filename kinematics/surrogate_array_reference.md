@@ -17,3 +17,6 @@ Shape[2] = No. of variables
 | 8 | Contact patch travel path unit vector, z | |
 | 9 | Wheel pose, x "camber" | radians |
 | 10 | Wheel pose, z "toe" | radians |
+| 11 | Instant Center, x  | mm |
+| 12 | Instant Center, y  | mm |
+| 13 | Instant Center, z  | mm |
