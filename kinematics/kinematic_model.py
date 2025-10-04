@@ -120,7 +120,7 @@ class KinematicModel:
         relative_steer = np.empty(shape)
 
         ### UPDATE SHAPE IF ADDING VARIABLES ###
-        surrogate_array = np.zeros((shape[0],shape[1],11)) 
+        surrogate_array = np.zeros((shape[0],shape[1],13)) 
         ### -------------------------------- ###
         
         for i, shock in enumerate(shock_space):
