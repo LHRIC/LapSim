@@ -120,7 +120,7 @@ class KinematicModel:
         relative_steer = np.empty(shape)
 
         ### UPDATE SHAPE IF ADDING VARIABLES ###
-        surrogate_array = np.zeros((shape[0],shape[1],13)) 
+        surrogate_array = np.zeros((shape[0],shape[1],16)) 
         ### -------------------------------- ###
         
         for i, shock in enumerate(shock_space):
@@ -152,8 +152,12 @@ class KinematicModel:
                     tangent_vec[i,j,2],                 # 8
                     wheel_poses[i,j,0],                 # 9
                     wheel_poses[i,j,2],                 # 10
-                    arb_angle[i,j],                     # 11
-                    contact_patch_z_travel[i,j]         # 12
+                    instant_center[i,j,0],              # 11
+                    instant_center[i,j,1],              # 12
+                    instant_center[i,j,2],              # 13
+
+                    arb_angle[i,j],                     # 14
+                    contact_patch_z_travel[i,j]         # 15
                     ]
         return surrogate_array
     
