@@ -164,7 +164,7 @@ class KinematicModel:
     def _init_interp(self, surrogate_array):
         self.shock_space = surrogate_array[:,0,0]
         self.steer_space = (surrogate_array[0,:,1]).T
-        interp = RegularGridInterpolator((self.shock_space, self.steer_space), surrogate_array, bounds_error=True, fill_value=None, method="linear")
+        interp = RegularGridInterpolator((self.shock_space, self.steer_space), surrogate_array, bounds_error=False, fill_value=None, method="linear")
         return interp
     
     def _init_z_interp(self, surrogate_array):
@@ -176,7 +176,7 @@ class KinematicModel:
     def interpolate(self, relative_shock, relative_steer, interp):
         clip_shock = np.clip(relative_shock, self.shock_space[0], self.shock_space[-1])
         clip_steer = np.clip(relative_steer, self.steer_space[0], self.steer_space[-1])
-        result = interp(np.array([clip_shock, clip_steer]))[0]
+        result = interp(np.array([[clip_shock, clip_steer]]))[0]
         # interp returns an array as it takes in an array of values to interpolate at so we take... 
         # ...the first element b/c we only interpolate at one point
         return result

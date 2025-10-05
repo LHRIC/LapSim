@@ -2,7 +2,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as rot
 from kinematics.kinematic_model import KinematicModel
 import scipy.optimize as scipy
-import sympy as sp
 
 def integrate_roll_axis(corner: KinematicModel, steer, deg_range, deg_steps, heave_range, heave_steps):
     rad_range = np.deg2rad(deg_range)
@@ -79,10 +78,13 @@ def calculate_kinematic_RCs(corner: KinematicModel, shock_vals, steer):
 
 def intersection_2D(point1, vec1, point2, vec2):
     matrix = np.vstack((vec1[1:3], -vec2[1:3]))
-    if np.linalg.cond(matrix) > 1e3:
+    if np.linalg.cond(matrix) > 1e10:
         print(f"High matrix condition number: {np.linalg.cond(matrix)}")
         print("This suggests the instant center projections are nearly parallel")
-    t_vec = np.linalg.solve(matrix, point2[1:3].reshape(-1,1) - point1[1:3].reshape(-1,1))
+    try:
+        t_vec = np.linalg.solve(matrix, point2[1:3].reshape(-1,1) - point1[1:3].reshape(-1,1))
+    except np.linalg.LinAlgError:
+        t_vec = [np.nan]
     intersection = point1 + t_vec[0]*vec1
     return intersection
 
