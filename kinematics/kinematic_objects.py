@@ -87,10 +87,19 @@ class CoordinateSystem:
         self.axis3 = np.cross(self.axis1, self.axis2)/np.linalg.norm(np.cross(self.axis1, self.axis2))
         self.matrix = np.array([self.axis1,self.axis2,self.axis3]).T
     def delta_angle(self):
-        delta_mat = self.matrix @ np.linalg.inv(self.initial_matrix) 
-        rot_obj = rot.from_matrix(delta_mat)
-        euler_angles = rot_obj.as_euler('XYZ')
-        return euler_angles
+        delta_mat = self.matrix @ np.linalg.inv(self.initial_matrix)
+        angles = np.zeros(3)
+        eye_mat = np.eye(3)
+        # ref_mat = np.array([[0,0,1],[0,1,0],[1,0,0]])
+        for i in range(3):
+            vec = delta_mat[2-i,:]
+            eye_vec = eye_mat[i,:]
+            ref_vec = eye_mat[2-i,:]
+            vec_proj = vec - np.dot(vec, eye_vec)*eye_vec
+            vec_proj_norm = vec_proj/np.linalg.norm(vec_proj)
+            angle = np.atan2(np.dot(np.cross(vec_proj_norm, ref_vec) , eye_vec),np.dot(vec_proj_norm, ref_vec))
+            angles[i] = angle
+        return np.array(angles)
 
 class Rigid:
     def __init__(self, point1: Hardpoint, point2: Hardpoint, coordinate_system: CoordinateSystem):
