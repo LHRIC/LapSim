@@ -113,14 +113,15 @@ class KinematicModel:
         delta_cp_pos = np.empty((shape[0],shape[1],3))
         delta_cp_pos_norm = np.empty(shape)
         tangent_vec = np.empty((shape[0],shape[1],3))
+        delta_z_contact_patch = np.empty(shape)
         delta_shock = np.empty(shape)
         motion_ratio = np.empty(shape)
-        z_pos = np.empty(shape)
         relative_shock = np.empty(shape)
         relative_steer = np.empty(shape)
+        pure_z_inverse_motion_ratio = np.empty(shape)
 
         ### UPDATE SHAPE IF ADDING VARIABLES ###
-        surrogate_array = np.zeros((shape[0],shape[1],16)) 
+        surrogate_array = np.zeros((shape[0],shape[1],17)) 
         ### -------------------------------- ###
         
         for i, shock in enumerate(shock_space):
@@ -129,16 +130,19 @@ class KinematicModel:
                     delta_cp_pos[i,j] = contact_patch_positions[i,j] - contact_patch_positions[i+1,j]
                     delta_cp_pos_norm[i,j] = np.linalg.norm(delta_cp_pos[i,j])
                     delta_shock[i,j] = abs(shock_compression[i,j] - shock_compression[i+1,j])
+                    delta_z_contact_patch[i,j] = abs(contact_patch_z_travel[i,j] - contact_patch_z_travel[i+1,j])
                 else:
                     delta_cp_pos[i,j] = delta_cp_pos[i-1,j]
                     delta_cp_pos_norm[i,j] = delta_cp_pos_norm[i-1,j]
                     delta_shock[i,j] = delta_shock[i-1,j]
+                    delta_z_contact_patch[i,j] = delta_z_contact_patch[i-1,j]
 
                 tangent_vec[i,j] = delta_cp_pos[i,j]/delta_cp_pos_norm[i,j]
 
                 motion_ratio[i,j] = delta_shock[i,j]/delta_cp_pos_norm[i,j] if delta_cp_pos_norm[i,j] !=0 else 0
                 relative_shock[i,j] = shock_compression[i,j] - shock_mid
                 relative_steer[i,j] = steer_rack_positions[i,j,1] - corner.inboard_tie.initial_pos[1]
+                pure_z_inverse_motion_ratio[i,j] = delta_shock[i,j]/(delta_z_contact_patch[i,j] + 1e-10)
                 
                 surrogate_array[i,j] = [                # Index:
                     relative_shock[i,j],                # 0
@@ -157,7 +161,8 @@ class KinematicModel:
                     instant_center[i,j,2],              # 13
 
                     arb_angle[i,j],                     # 14
-                    contact_patch_z_travel[i,j]         # 15
+                    contact_patch_z_travel[i,j],         # 15
+                    pure_z_inverse_motion_ratio[i,j]    # 16
                     ]
         return surrogate_array
     
